@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+
 class EndpointData {
   EndpointData(this.name, this.id, this.token, this.isIncoming);
 
@@ -17,10 +18,22 @@ class EndpointData {
   }
 }
 
-class EndpointList extends StatefulWidget {
-  EndpointList({Key key}) : super(key: key);
+class EndpointList extends StatefulWidget{
+  _EndpointList _endpointList = _EndpointList();
 
+
+  @override
+  State<StatefulWidget> createState() => _endpointList;
+
+  insertEndpoint(EndpointData data){
+    _endpointList.insertEndpoint(data);
+  }
+
+}
+
+class _EndpointList extends State<EndpointList>{
   final List<EndpointData> endpointList = <EndpointData>[];
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
@@ -29,6 +42,7 @@ class EndpointList extends StatefulWidget {
         body: ListView.builder(
           itemCount: endpointList.length,
           itemBuilder: (context, index){
+            /*
             final endpoint = endpointList[index];
             return ListTile(
               title: Text(
@@ -37,42 +51,45 @@ class EndpointList extends StatefulWidget {
               ),
               onTap: () => onTapped(index, context),
             );
+
+             */
+
+            return Container(
+              //color: Colors.amber[colorCodes[index]],
+              child: Center(
+                  child: Container(
+                    child: fillSingleCell(endpointList[index]),
+                  )),
+            );
           },
         )
     );
   }
 
-  BoxConstraints setConstraints(bool complete){
-    if(complete) {
-      return BoxConstraints(
-        minWidth: 30,
-        minHeight: 30,
-        maxWidth: 40,
-        maxHeight: 40,
-      );
-    } else {
-      return BoxConstraints(
-        minWidth: 30,
-        minHeight: 30,
-        maxWidth: 35,
-        maxHeight: 35,
-      );
-    }
-  }
-
-  void insertEndpoint(EndpointData endpointData){
+  insertEndpoint(EndpointData endpointData){
     endpointList.add(endpointData);
     print(endpointList.toString());
   }
 
-  @override
-  State<StatefulWidget> createState() {
-    // TODO: implement createState
-    throw UnimplementedError();
+  fillSingleCell(EndpointData data) {
+    //TODO: Colocar cada element al lloc corresponent
+    return Container(
+        child: Column(
+          children: <Widget>[
+            Text(insertText(data.name)),
+            Text(insertText(data.token)),
+            Text(insertText(data.id)),
+            Text(insertText(data.isIncoming.toString()))
+          ],
+        )
+    );
   }
 
-  onTapped(int index, BuildContext context) {
-    print("tapped: " + context.toString() + "; index: " + index.toString());
+  insertText(String text) {
+    if (text != null) {
+      return text;
+    } else {
+      return "No specific time";
+    }
   }
-
 }

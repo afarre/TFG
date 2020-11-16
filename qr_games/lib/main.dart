@@ -7,22 +7,24 @@ import 'package:qr_games/teacher/endpoint_list.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:nearby_connections/nearby_connections.dart';
-import 'package:qr_games/teacher/main_view.dart';
+import 'package:qr_games/teacher/teacher_view.dart';
 
 void main() {
   EndpointList endpointList = EndpointList();
-  runApp(MaterialApp(
-    title: 'Named Routes Demo',
-    // Start the app with the "/" named route. In this case, the app starts
-    // on the FirstScreen widget.
-    initialRoute: '/',
-    routes: {
-      // When navigating to the "/" route, build the FirstScreen widget.
-      '/': (context) => MyApp(endpointList),
-      // When navigating to the "/second" route, build the SecondScreen widget.
-      '/endpoint_list': (context) => endpointList,
-    },
-  ));
+  runApp(
+      MaterialApp(
+        title: 'Named Routes Demo',
+        // Start the app with the "/" named route. In this case, the app starts
+        // on the FirstScreen widget.
+        initialRoute: '/',
+        routes: {
+          // When navigating to the "/" route, build the FirstScreen widget.
+          '/': (context) => MyApp(endpointList),
+          // When navigating to the "/second" route, build the SecondScreen widget.
+          '/endpoint_list': (context) => EndpointList(),
+        },
+      )
+  );
 }
 
 
@@ -72,11 +74,6 @@ class _MyBodyState extends State<Body> {
   final String userName = Random().nextInt(10000).toString();
   final Strategy strategy = Strategy.P2P_STAR;
   int _currentIndex = 0;
-  final List<Widget> _children = [
-    TeacherView(endpointList),
-    fillSecondTab(),
-    fillThirdTab(),
-  ];
 
   String cId = "0"; //currently connected device ID
   File tempFile; //reference to the file currently being transferred
@@ -87,7 +84,7 @@ class _MyBodyState extends State<Body> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _children[_currentIndex],
+      body: getPage(_currentIndex),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex, // this will be set when a new tab is tapped
         onTap: (value){
@@ -458,6 +455,18 @@ class _MyBodyState extends State<Body> {
         child: new Text("three")
     ),
     );
+  }
+
+  Widget getPage(int currentIndex) {
+    if (currentIndex == 0) {
+      return TeacherView(this.endpointList);
+    }
+    if (currentIndex == 1) {
+      return fillSecondTab();
+    }
+    if (currentIndex == 2) {
+      return fillThirdTab();
+    }
   }
 }
 
