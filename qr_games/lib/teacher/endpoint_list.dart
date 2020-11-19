@@ -53,26 +53,32 @@ class EndpointList extends StatefulWidget{
    */
 }
 
-class _EndpointList extends State<EndpointList>{
+class _EndpointList extends State<EndpointList> with WidgetsBindingObserver{
   final Strategy strategy = Strategy.P2P_STAR;
   String cId = "0"; //currently connected device ID
   File tempFile; //reference to the file currently being transferred
   Map<int, String> map = Map();
-
   final List<EndpointData> endpointList = <EndpointData>[];
+  String name = "teacher";
 
   @override
   void initState(){
+    WidgetsBinding.instance.addObserver(this);
     super.initState();
     //_populateData();
     advertiseDevice();
   }
 
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
 
   void advertiseDevice() async{
     try {
       bool a = await Nearby().startAdvertising(
-        "teacher",
+        name,
         strategy,
         onConnectionInitiated: onConnectionInit,
         onConnectionResult: (id, status) {
@@ -150,17 +156,13 @@ class _EndpointList extends State<EndpointList>{
                       }
                     },
                     onPayloadTransferUpdate: (endid, payloadTransferUpdate) {
-                      if (payloadTransferUpdate.status ==
-                          PayloadStatus.IN_PROGRRESS) {
+                      if (payloadTransferUpdate.status == PayloadStatus.IN_PROGRRESS) {
                         print(payloadTransferUpdate.bytesTransferred);
-                      } else if (payloadTransferUpdate.status ==
-                          PayloadStatus.FAILURE) {
+                      } else if (payloadTransferUpdate.status == PayloadStatus.FAILURE) {
                         print("failed");
                         showSnackbar(endid + ": FAILED to transfer file");
-                      } else if (payloadTransferUpdate.status ==
-                          PayloadStatus.SUCCESS) {
-                        showSnackbar(
-                            "success, total bytes = ${payloadTransferUpdate.totalBytes}");
+                      } else if (payloadTransferUpdate.status == PayloadStatus.SUCCESS) {
+                        showSnackbar("success, total bytes = ${payloadTransferUpdate.totalBytes}");
 
                         if (map.containsKey(payloadTransferUpdate.id)) {
                           //rename the file now
@@ -199,11 +201,14 @@ class _EndpointList extends State<EndpointList>{
     print(endpointList.toString());
     return WillPopScope(
       onWillPop: () async {
-        Navigator.pop(context);
+        Navigator.pop(context, true);
         return false;
       },
       child: Scaffold(
         appBar: AppBar(
+          leading: IconButton(icon: Icon(Icons.arrow_back), onPressed: (){
+            Navigator.pop(context, true);
+          },),
           title: Text('Connected devices'),
         ),
         body: ListView.builder(
@@ -220,7 +225,6 @@ class _EndpointList extends State<EndpointList>{
               subtitle: Text("Id: " + endpoint.id + "\nAuthentication Token:" + endpoint.token),
               onTap: () => onTapped(index, context),
             );
-
  */
           },
         )
@@ -365,6 +369,17 @@ class _EndpointList extends State<EndpointList>{
       return text;
     } else {
       return "No specific time";
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    print('state = $state');
+    if(state == AppLifecycleState.detached || state == AppLifecycleState.inactive || state == AppLifecycleState.paused){
+      print("stopped advertising");
+      Nearby().stopAdvertising();
+    }else if (state == AppLifecycleState.resumed){
+      advertiseDevice();
     }
   }
 }

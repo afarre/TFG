@@ -6,21 +6,19 @@ void main() => runApp(MyApp());
 
 
 class MyApp extends StatefulWidget {
- /* EndpointList endpointList;
-  MyApp(EndpointList endpointList){
-    this.endpointList = endpointList;
-  }*/
 
   @override
-  _MyAppState createState() => _MyAppState(/*endpointList*/);
+  _MyAppState createState() => _MyAppState();
 }
 
 class _MyAppState extends State<MyApp> {
-  /*EndpointList endpointList;
-  _MyAppState(EndpointList endpointList){
-    this.endpointList = endpointList;
-  }*/
   int _currentIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -39,11 +37,11 @@ class _MyAppState extends State<MyApp> {
           items: [
             BottomNavigationBarItem(
               icon: new Icon(Icons.home),
-              label: 'Home',
+              label: 'Teacher',
             ),
             BottomNavigationBarItem(
               icon: new Icon(Icons.mail),
-              label: 'Messages',
+              label: 'Student',
             ),
             BottomNavigationBarItem(
                 icon: Icon(Icons.settings),
@@ -74,7 +72,7 @@ class _MyAppState extends State<MyApp> {
 
   Widget getPage(int currentIndex) {
     if (currentIndex == 0) {
-      return TeacherView(/*this.endpointList*/);
+      return TeacherView();
     }
     if (currentIndex == 1) {
       return fillSecondTab();
