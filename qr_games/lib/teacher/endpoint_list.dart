@@ -1,5 +1,7 @@
-import 'package:flutter/material.dart';
+import 'dart:io';
 
+import 'package:flutter/material.dart';
+import 'package:nearby_connections/nearby_connections.dart';
 
 class EndpointData {
   EndpointData(this.name, this.id, this.token, this.isIncoming);
@@ -18,71 +20,344 @@ class EndpointData {
   }
 }
 
-class EndpointList extends StatefulWidget{
-  _EndpointList _endpointList = _EndpointList();
+class ConnectionData {
+  ConnectionData(this.id, this.status);
 
+  final String id;
+  final Status status;
 
   @override
-  State<StatefulWidget> createState() => _endpointList;
+  String toString() {
+    return 'id: ' + id +
+        '\nstatus: ' + status.toString();
+  }
+}
 
-  insertEndpoint(EndpointData data){
-    _endpointList.insertEndpoint(data);
+class EndpointList extends StatefulWidget{
+  createState() => _EndpointList();
+  /*
+
+  var _endpointList = _EndpointList();
+
+  EndpointList({Key key}) : super(key: key);
+
+  @override
+  _EndpointList createState(){
+    return this._endpointList = new _EndpointList();
   }
 
+  void insertEndpoint(EndpointData endpointData) {
+    _endpointList.insertEndpoint(endpointData);
+  }
+
+   */
 }
 
 class _EndpointList extends State<EndpointList>{
+  final Strategy strategy = Strategy.P2P_STAR;
+  String cId = "0"; //currently connected device ID
+  File tempFile; //reference to the file currently being transferred
+  Map<int, String> map = Map();
+
   final List<EndpointData> endpointList = <EndpointData>[];
+
+  @override
+  void initState(){
+    super.initState();
+    //_populateData();
+    advertiseDevice();
+  }
+
+
+  void advertiseDevice() async{
+    try {
+      bool a = await Nearby().startAdvertising(
+        "teacher",
+        strategy,
+        onConnectionInitiated: onConnectionInit,
+        onConnectionResult: (id, status) {
+          showSnackbar(status);
+          showSnackbar(id);
+          return new ConnectionData(id, status);
+        },
+        onDisconnected: (id) {
+          showSnackbar("Disconnected: " + id);
+          return new ConnectionData(id, null);
+        },
+      );
+      showSnackbar("ADVERTISING: " + a.toString());
+    } catch (exception) {
+      showSnackbar(exception);
+    }
+    return null;
+  }
+
+  void showSnackbar(dynamic a) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(a.toString()),
+    ));
+  }
+
+  /// Called upon Connection request (on both devices)
+  /// Both need to accept connection to start sending/receiving
+  void onConnectionInit(String id, ConnectionInfo info) {
+    showModalBottomSheet(
+      context: context,
+      builder: (builder) {
+        return Center(
+          child: Column(
+            children: <Widget>[
+              Text("id: " + id),
+              Text("Token: " + info.authenticationToken),
+              Text("Name" + info.endpointName),
+              Text("Incoming: " + info.isIncomingConnection.toString()),
+              RaisedButton(
+                child: Text("Accept Connection"),
+                onPressed: () {
+                  Navigator.pop(context);
+                  cId = id;
+                  setState(() {
+                    endpointList.add(new EndpointData(info.endpointName, id, info.authenticationToken, info.isIncomingConnection));
+                  });
+                  Nearby().acceptConnection(
+                    id,
+                    onPayLoadRecieved: (endid, payload) async {
+                      if (payload.type == PayloadType.BYTES) {
+                        String str = String.fromCharCodes(payload.bytes);
+                        showSnackbar(endid + ": " + str);
+
+                        if (str.contains(':')) {
+                          // used for file payload as file payload is mapped as
+                          // payloadId:filename
+                          int payloadId = int.parse(str.split(':')[0]);
+                          String fileName = (str.split(':')[1]);
+
+                          if (map.containsKey(payloadId)) {
+                            if (await tempFile.exists()) {
+                              tempFile.rename(
+                                  tempFile.parent.path + "/" + fileName);
+                            } else {
+                              showSnackbar("File doesnt exist");
+                            }
+                          } else {
+                            //add to map if not already
+                            map[payloadId] = fileName;
+                          }
+                        }
+                      } else if (payload.type == PayloadType.FILE) {
+                        showSnackbar(endid + ": File transfer started");
+                        tempFile = File(payload.filePath);
+                      }
+                    },
+                    onPayloadTransferUpdate: (endid, payloadTransferUpdate) {
+                      if (payloadTransferUpdate.status ==
+                          PayloadStatus.IN_PROGRRESS) {
+                        print(payloadTransferUpdate.bytesTransferred);
+                      } else if (payloadTransferUpdate.status ==
+                          PayloadStatus.FAILURE) {
+                        print("failed");
+                        showSnackbar(endid + ": FAILED to transfer file");
+                      } else if (payloadTransferUpdate.status ==
+                          PayloadStatus.SUCCESS) {
+                        showSnackbar(
+                            "success, total bytes = ${payloadTransferUpdate.totalBytes}");
+
+                        if (map.containsKey(payloadTransferUpdate.id)) {
+                          //rename the file now
+                          String name = map[payloadTransferUpdate.id];
+                          tempFile.rename(tempFile.parent.path + "/" + name);
+                        } else {
+                          //bytes not received till yet
+                          map[payloadTransferUpdate.id] = "";
+                        }
+                      }
+                    },
+                  );
+                },
+              ),
+              RaisedButton(
+                child: Text("Reject Connection"),
+                onPressed: () async {
+                  Navigator.pop(context);
+                  try {
+                    await Nearby().rejectConnection(id);
+                  } catch (e) {
+                    showSnackbar(e);
+                  }
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    print("printing list contents in view build:");
+    print(endpointList.toString());
+    return WillPopScope(
+      onWillPop: () async {
+        Navigator.pop(context);
+        return false;
+      },
+      child: Scaffold(
         appBar: AppBar(
           title: Text('Connected devices'),
         ),
         body: ListView.builder(
           itemCount: endpointList.length,
           itemBuilder: (context, index){
-            /*
+            return fillSingleCellCool(endpointList[index]);
+/*
             final endpoint = endpointList[index];
             return ListTile(
               title: Text(
-                endpoint.name,
+                "Name: " + endpoint.name,
                 style: Theme.of(context).textTheme.headline5,
               ),
+              subtitle: Text("Id: " + endpoint.id + "\nAuthentication Token:" + endpoint.token),
               onTap: () => onTapped(index, context),
             );
 
-             */
-
-            return Container(
-              //color: Colors.amber[colorCodes[index]],
-              child: Center(
-                  child: Container(
-                    child: fillSingleCell(endpointList[index]),
-                  )),
-            );
+ */
           },
         )
+      ),
     );
   }
 
-  insertEndpoint(EndpointData endpointData){
-    endpointList.add(endpointData);
-    print(endpointList.toString());
-  }
+  onTapped(int index, BuildContext context) {
+    showDialog(context: context,
+      builder: (BuildContext context){
+        return AlertDialog(
+          title: new Text("Escolleix que vols fer"),
+          actions: <Widget>[
+            new FlatButton(
+              child: new Text("Marca/Desmarca tasca"),
+              onPressed: () {
+                //taskComplete.fillRange(index, index + 1, !taskComplete.elementAt(index));
+                setState(() {
 
-  fillSingleCell(EndpointData data) {
-    //TODO: Colocar cada element al lloc corresponent
-    return Container(
-        child: Column(
-          children: <Widget>[
-            Text(insertText(data.name)),
-            Text(insertText(data.token)),
-            Text(insertText(data.id)),
-            Text(insertText(data.isIncoming.toString()))
+                });
+                Navigator.of(context).pop();
+              },
+            ),
+            new FlatButton(
+              child: new Text("Esborra tasca"),
+              onPressed: () {
+                //taskList.removeAt(index);
+                //taskComplete.removeAt(index);
+                //numElements--;
+                setState(() {
+
+                });
+                Navigator.of(context).pop();
+              },
+            ),
+            new FlatButton(
+              child: new Text("Cancel·la"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
           ],
-        )
+        );
+      },
     );
+  }
+
+  fillSingleCellCool(EndpointData event) {
+    return Container(
+        height: 250,
+        width: MediaQuery.of(context).size.width,
+        child: Stack(
+          fit: StackFit.loose,
+          children: <Widget>[
+            Positioned (
+              top: 0,
+              right: 0,
+              child: Container(
+                width: 70,
+                height: 70,
+                decoration: BoxDecoration(
+                  gradient: RadialGradient(
+                      radius: 1,
+                      center: Alignment(1, -1),
+                      colors: [
+                        Colors.black.withOpacity(0.6),
+                        Colors.transparent
+                      ]
+                  ), //linear gradient
+                ),
+              ),
+            ),
+
+            Positioned(
+              bottom: 0,
+
+              child: GestureDetector(
+                  child:Container(
+                      width: MediaQuery.of(context).size.width,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.transparent,
+                              Colors.black
+                            ]
+                        ), //linear gradient
+                      ), //decoration
+                      child: Padding(
+                          padding: EdgeInsets.all(20.0),
+                          child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: <Widget>[
+                                Padding(
+                                    padding: EdgeInsets.fromLTRB(0, 20.0, 0, 10.0),
+                                    child: Text(
+                                        insertText(event.name),
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white,
+                                            fontSize: 20
+                                        ) //text style
+                                    ) //text
+                                ), //text padding
+
+                                Row(
+                                  children: <Widget>[
+                                    Text(
+                                        insertText(event.id),
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white
+                                        ) //text style
+                                    ),
+                                    Text(
+                                        insertText(event.token),
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white
+                                        ) //text style
+                                    )
+                                  ],
+                                )
+                                //text
+                              ] //column children
+                          ) //column
+                      ) //column padding
+                  )
+              ), //container
+            ), //info positioned
+          ], //stack children
+        ) //big stack
+    ); //container
   }
 
   insertText(String text) {
