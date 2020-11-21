@@ -34,38 +34,30 @@ class ConnectionData {
 }
 
 class EndpointList extends StatefulWidget{
-  createState() => _EndpointList();
-  /*
-
-  var _endpointList = _EndpointList();
-
-  EndpointList({Key key}) : super(key: key);
-
-  @override
-  _EndpointList createState(){
-    return this._endpointList = new _EndpointList();
+  List<EndpointData> _endpointList;
+  EndpointList(List<EndpointData> endpointList){
+    _endpointList = endpointList;
   }
 
-  void insertEndpoint(EndpointData endpointData) {
-    _endpointList.insertEndpoint(endpointData);
-  }
-
-   */
+  createState() => EndpointListPublic(_endpointList);
 }
 
-class _EndpointList extends State<EndpointList> with WidgetsBindingObserver{
+class EndpointListPublic extends State<EndpointList> with WidgetsBindingObserver{
   final Strategy strategy = Strategy.P2P_STAR;
   String cId = "0"; //currently connected device ID
   File tempFile; //reference to the file currently being transferred
   Map<int, String> map = Map();
-  final List<EndpointData> endpointList = <EndpointData>[];
+  List<EndpointData> endpointList = <EndpointData>[];
   String name = "teacher";
+
+  EndpointListPublic(List<EndpointData> endpointList){
+    this.endpointList = endpointList;
+  }
 
   @override
   void initState(){
     WidgetsBinding.instance.addObserver(this);
     super.initState();
-    //_populateData();
     advertiseDevice();
   }
 
@@ -75,6 +67,7 @@ class _EndpointList extends State<EndpointList> with WidgetsBindingObserver{
     super.dispose();
   }
 
+  //primer pop up
   void advertiseDevice() async{
     try {
       bool a = await Nearby().startAdvertising(
@@ -112,16 +105,18 @@ class _EndpointList extends State<EndpointList> with WidgetsBindingObserver{
       builder: (builder) {
         return Center(
           child: Column(
+            //segon pop up
             children: <Widget>[
               Text("id: " + id),
               Text("Token: " + info.authenticationToken),
-              Text("Name" + info.endpointName),
+              Text("Name: " + info.endpointName),
               Text("Incoming: " + info.isIncomingConnection.toString()),
               RaisedButton(
                 child: Text("Accept Connection"),
                 onPressed: () {
                   Navigator.pop(context);
                   cId = id;
+                  print("cId: $cId\nid: $id");
                   setState(() {
                     endpointList.add(new EndpointData(info.endpointName, id, info.authenticationToken, info.isIncomingConnection));
                   });
@@ -201,13 +196,13 @@ class _EndpointList extends State<EndpointList> with WidgetsBindingObserver{
     print(endpointList.toString());
     return WillPopScope(
       onWillPop: () async {
-        Navigator.pop(context, true);
+        Navigator.pop(context, endpointList);
         return false;
       },
       child: Scaffold(
         appBar: AppBar(
           leading: IconButton(icon: Icon(Icons.arrow_back), onPressed: (){
-            Navigator.pop(context, true);
+            Navigator.pop(context, endpointList);
           },),
           title: Text('Connected devices'),
         ),

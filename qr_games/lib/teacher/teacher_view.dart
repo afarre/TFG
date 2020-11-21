@@ -1,13 +1,17 @@
+import 'dart:math';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:nearby_connections/nearby_connections.dart';
 import 'package:qr_games/teacher/endpoint_list.dart';
+import 'package:qr_games/teacher/create_forms.dart';
 
 class TeacherView extends StatefulWidget {
   _MyTeacherViewState createState() => _MyTeacherViewState();
 }
 
 class _MyTeacherViewState extends State<TeacherView>{
-
+  List<EndpointData> endpointList = <EndpointData>[];
   @override
   void initState() {
     super.initState();
@@ -24,11 +28,20 @@ class _MyTeacherViewState extends State<TeacherView>{
       children: <Widget>[
         RaisedButton(
           child: const Text('Create forms', style: TextStyle(fontSize: 20)),
-          onPressed: () {},
+          onPressed: () {
+            print("Create form view selected");
+            Navigator.push(context, MaterialPageRoute(builder: (context) => CreateForms()));
+          },
         ),
         RaisedButton(
           child: const Text('Share forms', style: TextStyle(fontSize: 20)),
-          onPressed: () {},
+          onPressed: () {
+            String a = Random().nextInt(100).toString();
+            print("Sending $a");
+            for (var endpoint in endpointList){
+              Nearby().sendBytesPayload(endpoint.id, Uint8List.fromList(a.codeUnits));
+            }
+          },
         ),
         RaisedButton(
           child: const Text('Edit forms', style: TextStyle(fontSize: 20)),
@@ -38,12 +51,11 @@ class _MyTeacherViewState extends State<TeacherView>{
           child: const Text('Advertise device', style: TextStyle(fontSize: 20)),
           onPressed: () async {
             print("Advertise/view selected.");
-            var navigationResult = await Navigator.push(context, MaterialPageRoute(builder: (context) => EndpointList()));
-            if(navigationResult == true){
-              Nearby().stopAdvertising();
-              print("stopped advertising");
-            }
-          },
+            var navigationResult = await Navigator.push(context, MaterialPageRoute(builder: (context) => EndpointList(endpointList)));
+            endpointList = navigationResult;
+            Nearby().stopAdvertising();
+            print("stopped advertising");
+          }
         ),
       ],
     );
