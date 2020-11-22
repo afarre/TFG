@@ -92,7 +92,7 @@ class EndpointListPublic extends State<EndpointList> with WidgetsBindingObserver
   }
 
   void showSnackbar(dynamic a) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+    Scaffold.of(context).showSnackBar(SnackBar(
       content: Text(a.toString()),
     ));
   }
