@@ -1,5 +1,6 @@
 
 import 'package:flutter/material.dart';
+import 'package:qr_games/settings/settings_view.dart';
 import 'package:qr_games/teacher/teacher_view.dart';
 
 void main() => runApp(MyApp());
@@ -61,15 +62,6 @@ class _MyAppState extends State<MyApp> {
     );
   }
 
-  static fillThirdTab() {
-    Scaffold(body: Container(
-        padding: const EdgeInsets.all(32.0),
-        alignment: Alignment.center,
-        child: new Text("three")
-    ),
-    );
-  }
-
   Widget getPage(int currentIndex) {
     if (currentIndex == 0) {
       return TeacherView();
@@ -78,7 +70,7 @@ class _MyAppState extends State<MyApp> {
       return fillSecondTab();
     }
     if (currentIndex == 2) {
-      return fillThirdTab();
+      return SettingsView();
     }
   }
 }

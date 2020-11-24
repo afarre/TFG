@@ -30,6 +30,7 @@ dependencies:
   cupertino_icons: ^1.0.0
   image_picker: ^0.6.1+2
   nearby_connections: ^2.0.2
+  wifi_iot: ^0.1.1
 
 dev_dependencies:
   flutter_test:

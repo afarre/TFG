@@ -57,6 +57,12 @@ class _MyTeacherViewState extends State<TeacherView>{
             print("stopped advertising");
           }
         ),
+        RaisedButton(
+          child: const Text('Stop all endpoints', style: TextStyle(fontSize: 20)),
+          onPressed: () {
+            Nearby().stopAllEndpoints();
+          },
+        ),
       ],
     );
   }

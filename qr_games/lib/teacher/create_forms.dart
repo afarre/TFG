@@ -8,12 +8,14 @@ class CreateForms extends StatefulWidget{
 
 class _CreateForms extends State<CreateForms>{
   //final myController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
   static int _numQuestions = 1;
   List<Widget> _questions = new List.generate(_numQuestions, (int i) => new Question(_numQuestions, i));
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _formKey,
       resizeToAvoidBottomPadding: true,
       backgroundColor: Colors.white,
       body: Container(
@@ -71,8 +73,8 @@ class _CreateForms extends State<CreateForms>{
                 new Expanded(child: RaisedButton(
                   child: Text('Create form', style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold)),
                   onPressed: () {
-                    //return to prev window with task text
-                    Navigator.pop(context/*, myController.text*/);
+                    _formKey.currentState.save();
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => Result(model: this.model)));
                   },
                 ), flex: 3)
               ],
