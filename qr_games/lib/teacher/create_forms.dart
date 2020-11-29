@@ -5,13 +5,21 @@ import 'package:qr_games/model/form.dart';
 
 
 class CreateForms extends StatefulWidget{
+  _CreateForms _createForms;
   @override
-  _CreateForms createState() => _CreateForms();
+  _CreateForms createState(){
+    _createForms = _CreateForms();
+    return _createForms;
+  }
 
+  FormModel getForm(){
+    return _createForms.form;
+  }
 }
 
 class _CreateForms extends State<CreateForms>{
   final _formKey = GlobalKey<FormState>();
+  FormModel form;
   List<Question> _questions = [];
   final myController = TextEditingController();
 
@@ -111,9 +119,7 @@ class _CreateForms extends State<CreateForms>{
                       QuestionModel questionModel = QuestionModel(_questions[i].getQuestion(), optionModelList);
                       questionModelList.add(questionModel);
                     }
-                    FormModel form = FormModel(myController.text, questionModelList);
-                    String json = jsonEncode(form);
-                    print(json);
+                    form = FormModel(myController.text, questionModelList);
                   },
                 ), flex: 3)
               ],
@@ -218,6 +224,7 @@ class _Question extends State<Question> {
         children: <Widget>[
           Row(
             children: <Widget>[
+              Text(this.hashCode.toString()),
               Flexible(
                 flex: 2,
                 child: new TextFormField(

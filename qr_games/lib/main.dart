@@ -1,6 +1,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:qr_games/settings/settings_view.dart';
+import 'package:qr_games/student/student_view.dart';
 import 'package:qr_games/teacher/teacher_view.dart';
 
 void main() => runApp(MyApp());
@@ -67,7 +68,7 @@ class _MyAppState extends State<MyApp> {
       return TeacherView();
     }
     if (currentIndex == 1) {
-      return fillSecondTab();
+      return StudentView();
     }
     if (currentIndex == 2) {
       return SettingsView();

@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:math';
 import 'dart:typed_data';
 
@@ -12,6 +13,8 @@ class TeacherView extends StatefulWidget {
 
 class _MyTeacherViewState extends State<TeacherView>{
   List<EndpointData> endpointList = <EndpointData>[];
+  CreateForms createForms = CreateForms();
+
   @override
   void initState() {
     super.initState();
@@ -30,13 +33,15 @@ class _MyTeacherViewState extends State<TeacherView>{
           child: const Text('Create forms', style: TextStyle(fontSize: 20)),
           onPressed: () {
             print("Create form view selected");
-            Navigator.push(context, MaterialPageRoute(builder: (context) => CreateForms()));
+            Navigator.push(context, MaterialPageRoute(builder: (context) => createForms));
           },
         ),
         RaisedButton(
           child: const Text('Share forms', style: TextStyle(fontSize: 20)),
           onPressed: () {
-            String a = Random().nextInt(100).toString();
+            String json = jsonEncode(createForms.getForm());
+            print(json);
+            String a = json;
             print("Sending $a");
             for (var endpoint in endpointList){
               Nearby().sendBytesPayload(endpoint.id, Uint8List.fromList(a.codeUnits));

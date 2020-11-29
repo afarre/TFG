@@ -126,6 +126,7 @@ class _MyStudentViewState extends State<StudentView>{
                       if (payload.type == PayloadType.BYTES) {
                         String str = String.fromCharCodes(payload.bytes);
                         showSnackbar(endid + ": " + str);
+                        print("got this information: " + str);
 
                         if (str.contains(':')) {
                           // used for file payload as file payload is mapped as
