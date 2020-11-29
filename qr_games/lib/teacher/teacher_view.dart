@@ -3,8 +3,8 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:nearby_connections/nearby_connections.dart';
-import 'package:qr_games/teacher/endpoint_list.dart';
 import 'package:qr_games/teacher/create_forms.dart';
+import 'package:qr_games/teacher/endpoint_list.dart';
 
 class TeacherView extends StatefulWidget {
   _MyTeacherViewState createState() => _MyTeacherViewState();

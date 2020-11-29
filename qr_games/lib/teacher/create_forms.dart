@@ -1,19 +1,54 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:qr_games/model/form.dart';
+
 
 class CreateForms extends StatefulWidget{
   @override
-  State<StatefulWidget> createState() => _CreateForms();
+  _CreateForms createState() => _CreateForms();
 
 }
 
 class _CreateForms extends State<CreateForms>{
-  //final myController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  static int _numQuestions = 1;
-  List<Widget> _questions = new List.generate(_numQuestions, (int i) => new Question(_numQuestions, i));
+  List<Question> _questions = [];
+  final myController = TextEditingController();
+
+  @override
+  void dispose() {
+    // Clean up the controller when the widget is disposed.
+    myController.dispose();
+    super.dispose();
+  }
+
+  void removeQuestion(index) {
+    print("Removing question " + index.hashCode.toString());
+    setState(() {
+      _questions.remove(index);
+    });
+  }
+
+  void addQuestion() {
+    setState(() {
+      Question question = Question(removeQuestion, _questions.length);
+      _questions.add(question);
+      print("Adding question " + question.hashCode.toString());
+    });
+  }
+
+  @override
+  void initState() {
+    addQuestion(); //Initialize with 1 item
+    super.initState();
+  }
+
 
   @override
   Widget build(BuildContext context) {
+    for (var i = 0; i < _questions.length; i++){
+      print("Iterating on scaffold over: " + _questions[i].hashCode.toString());
+    }
     return Scaffold(
       key: _formKey,
       resizeToAvoidBottomPadding: true,
@@ -27,29 +62,19 @@ class _CreateForms extends State<CreateForms>{
             SizedBox(height: 20),
             _displayTitle(),
             new Expanded(
-             // height: 300,
+              // height: 300,
               child: new ListView(
-                children: _questions,
+                children: <Widget>[
+                  ..._questions,
+                ],
                 scrollDirection: Axis.vertical,
               ),
             ),
             Row(
               children: <Widget>[
                 new FlatButton(
-                  onPressed: (){
-                    setState(() {
-                      _numQuestions++;
-                    });
-                  },
-                  child: new Icon(Icons.add),
-                ),
-                new FlatButton(
-                  onPressed: (){
-                    setState(() {
-                      _numQuestions--;
-                    });
-                  },
-                  child: new Icon(Icons.remove),
+                  onPressed: () => addQuestion(),
+                  child: new Icon(Icons.ac_unit),
                 ),
               ],
             ),
@@ -73,8 +98,22 @@ class _CreateForms extends State<CreateForms>{
                 new Expanded(child: RaisedButton(
                   child: Text('Create form', style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold)),
                   onPressed: () {
-                    _formKey.currentState.save();
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => Result(model: this.model)));
+                    List<QuestionModel> questionModelList = new List<QuestionModel>();
+
+                    for(var i = 0; i < _questions.length; i++){
+                      print("For option: " + _questions[i].getQuestion());
+                      List<OptionModel> optionModelList = new List<OptionModel>();
+                      for(var j = 0; j < _questions[i]._optionList.length; j++){
+                        print("\tOption: " + _questions[i]._optionList[j].getOption());
+                        OptionModel optionModel = OptionModel(_questions[i]._optionList[j].getOption());
+                        optionModelList.add(optionModel);
+                      }
+                      QuestionModel questionModel = QuestionModel(_questions[i].getQuestion(), optionModelList);
+                      questionModelList.add(questionModel);
+                    }
+                    FormModel form = FormModel(myController.text, questionModelList);
+                    String json = jsonEncode(form);
+                    print(json);
                   },
                 ), flex: 3)
               ],
@@ -87,6 +126,7 @@ class _CreateForms extends State<CreateForms>{
 
   _displayTitle(){
     return TextField(
+      controller: myController,
       maxLines: null,
       autofocus: true,
       decoration: InputDecoration(
@@ -103,30 +143,77 @@ class _CreateForms extends State<CreateForms>{
 }
 
 class Question extends StatefulWidget {
-  int _numQuestions;
-  int _myIndex;
-  Question(int numQuestions, int myIndex){
-    this._numQuestions = numQuestions;
-    this._myIndex = myIndex;
+  final int index;
+  final Function(Question) removeQuestion;
+  List<Option> _optionList = [];
+  String _myQuestion;
+  _Question _question;
+
+  Question(this.removeQuestion, this.index);
+
+  void remove(){
+    print("Called remove on " + this.hashCode.toString());
+    removeQuestion(this);
   }
 
-  @override
-  State<StatefulWidget> createState() => new _Question(_numQuestions, _myIndex);
+  _Question createState(){
+    _question = _Question(index, remove, updateOptionList, myQuestion);
+    return _question;
+  }
+
+  void updateOptionList(List<Option> optionList){
+    _optionList = optionList;
+    for(var i = 0; i < _optionList.length; i++){
+      print("list size " + _optionList.length.toString() + " with component: " + _optionList[i].hashCode.toString());
+    }
+  }
+
+  String getQuestion() {
+    _question.getOption();
+    return _myQuestion;
+  }
+
+  myQuestion(String question) {
+    this._myQuestion = question;
+  }
 }
 
 class _Question extends State<Question> {
-  int _numOptions = 1;
-  int _numQuestions;
-  int _myIndex;
-  _Question(int numQuestions, int myIndex){
-    this._numQuestions = numQuestions;
-    this._myIndex = myIndex;
+  final int questionIndex;
+  final Function() remove;
+  final Function(List<Option>) updateOptionList;
+  final Function(String) myQuestion;
+  final myController = TextEditingController();
+
+  _Question(this.questionIndex, this.remove, this.updateOptionList, this.myQuestion);
+  List<Option> _optionList = [];
+
+  void removeOption() {
+    print("Removing last option");
+    setState(() {
+      _optionList.removeLast();
+    });
+  }
+
+  void addOption() {
+    setState(() {
+      Option option = Option(_optionList.length + 1);
+      updateOptionList(_optionList);
+      _optionList.add(option);
+      print("Adding option " + option.hashCode.toString());
+    });
+  }
+
+  @override
+  void initState() {
+    addOption(); //Initialize with 1 item
+    super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    List<Widget> _options = new List.generate(_numOptions, (int i) => new Options(_numOptions));
     return Container(
+      color: Colors.accents.elementAt(3 * questionIndex),
       child: Column(
         children: <Widget>[
           Row(
@@ -134,29 +221,31 @@ class _Question extends State<Question> {
               Flexible(
                 flex: 2,
                 child: new TextFormField(
+                  controller: myController,
                   maxLines: null,
                   decoration: InputDecoration(
                     border: InputBorder.none,
                     hintText: 'Question title',
                     isDense: true,
-                    prefixIcon:Text(_numQuestions.toString() + ". "),
+                    prefixIcon:Text((questionIndex + 1).toString() + ". "),
                     prefixIconConstraints: BoxConstraints(minWidth: 0, minHeight: 0),
                   ),
                 ),
               ),
               new IconButton(
                 icon: new Icon(Icons.delete),
-                onPressed: () {
-                  setState(() {
-                    _CreateForms()._questions.removeAt(_myIndex);
-                  });
-                },
+                onPressed: (){
+                  print("delete pressed");
+                  remove();
+                }
               ),
             ],
           ),
           new ListView(
             physics: NeverScrollableScrollPhysics(),
-            children: _options,
+            children: <Widget>[
+              ..._optionList,
+            ],
             scrollDirection: Axis.vertical,
             shrinkWrap: true,
           ),
@@ -165,7 +254,7 @@ class _Question extends State<Question> {
               new FlatButton(
                 onPressed: (){
                   setState(() {
-                    _numOptions++;
+                    addOption();
                   });
                 },
                 child: new Icon(Icons.add),
@@ -173,7 +262,7 @@ class _Question extends State<Question> {
               new FlatButton(
                 onPressed: (){
                   setState(() {
-                    _numOptions--;
+                    removeOption();
                   });
                 },
                 child: new Icon(Icons.remove),
@@ -184,30 +273,47 @@ class _Question extends State<Question> {
       ),
     );
   }
+
+  void getOption() {
+    myQuestion(myController.text);
+  }
 }
 
 
-class Options extends StatefulWidget {
-  int _numOptions;
+class Option extends StatefulWidget {
+  final int _numOptions;
+  _Option _option;
+  String _myOption;
 
-  Options(int numOptions){
-    this._numOptions = numOptions;
+  Option(this._numOptions);
+
+  _Option createState(){
+    _option = _Option(_numOptions, myOption);
+    return _option;
   }
 
-  @override
-  State<StatefulWidget> createState() => new _Options(_numOptions);
+
+  String getOption(){
+    _option.getOption();
+    return _myOption;
+  }
+
+  myOption(String option) {
+    this._myOption = option;
+  }
 }
 
-class _Options extends State<Options> {
+class _Option extends State<Option> {
   int _numOptions;
-  _Options(int numOptions){
-    this._numOptions = numOptions;
-  }
+  final Function(String) myOption;
+  final myController = TextEditingController();
+  _Option(this._numOptions, this.myOption);
 
   @override
   Widget build(BuildContext context) {
     return Padding(padding: EdgeInsets.only(left: 15),
       child: new TextFormField(
+        controller: myController,
         maxLines: null,
         decoration: InputDecoration(
         border: InputBorder.none,
@@ -218,5 +324,9 @@ class _Options extends State<Options> {
         ),
       ),
     );
+  }
+
+  void getOption() {
+    myOption(myController.text);
   }
 }
