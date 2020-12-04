@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:qr_games/model/form.dart';
 
@@ -113,10 +111,10 @@ class _CreateForms extends State<CreateForms>{
                       List<OptionModel> optionModelList = new List<OptionModel>();
                       for(var j = 0; j < _questions[i]._optionList.length; j++){
                         print("\tOption: " + _questions[i]._optionList[j].getOption());
-                        OptionModel optionModel = OptionModel(_questions[i]._optionList[j].getOption());
+                        OptionModel optionModel = OptionModel(_questions[i]._optionList[j].getOption(), j);
                         optionModelList.add(optionModel);
                       }
-                      QuestionModel questionModel = QuestionModel(_questions[i].getQuestion(), optionModelList);
+                      QuestionModel questionModel = QuestionModel(_questions[i].getQuestion(), optionModelList, i);
                       questionModelList.add(questionModel);
                     }
                     form = FormModel(myController.text, questionModelList);

@@ -50,9 +50,7 @@ class EndpointListPublic extends State<EndpointList> with WidgetsBindingObserver
   List<EndpointData> endpointList = <EndpointData>[];
   String name = "teacher";
 
-  EndpointListPublic(List<EndpointData> endpointList){
-    this.endpointList = endpointList;
-  }
+  EndpointListPublic(this.endpointList);
 
   @override
   void initState(){

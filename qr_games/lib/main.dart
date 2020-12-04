@@ -54,14 +54,6 @@ class _MyAppState extends State<MyApp> {
       ),
     );
   }
-  static fillSecondTab() {
-    Scaffold(body: Container(
-        padding: const EdgeInsets.all(32.0),
-        alignment: Alignment.center,
-        child: new Text("two")
-    ),
-    );
-  }
 
   Widget getPage(int currentIndex) {
     if (currentIndex == 0) {

@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -39,12 +38,11 @@ class _MyTeacherViewState extends State<TeacherView>{
         RaisedButton(
           child: const Text('Share forms', style: TextStyle(fontSize: 20)),
           onPressed: () {
+            print("wtf: " + createForms.getForm().title);
             String json = jsonEncode(createForms.getForm());
-            print(json);
-            String a = json;
-            print("Sending $a");
+            print("Sending $json");
             for (var endpoint in endpointList){
-              Nearby().sendBytesPayload(endpoint.id, Uint8List.fromList(a.codeUnits));
+              Nearby().sendBytesPayload(endpoint.id, Uint8List.fromList(json.codeUnits));
             }
           },
         ),
@@ -66,6 +64,7 @@ class _MyTeacherViewState extends State<TeacherView>{
           child: const Text('Stop all endpoints', style: TextStyle(fontSize: 20)),
           onPressed: () {
             Nearby().stopAllEndpoints();
+            endpointList = <EndpointData>[];
           },
         ),
       ],

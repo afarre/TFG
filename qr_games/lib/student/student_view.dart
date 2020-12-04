@@ -1,9 +1,12 @@
 
+import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:nearby_connections/nearby_connections.dart';
+import 'package:qr_games/model/form.dart';
+import 'package:qr_games/student/build_forms.dart';
 
 class StudentView extends StatefulWidget{
   @override
@@ -15,6 +18,7 @@ class _MyStudentViewState extends State<StudentView>{
   String cId = "0"; //currently connected device ID
   Map<int, String> map = Map();
   File tempFile; //reference to the file currently being transferred
+  FormModel form;
 
   @override
   Widget build(BuildContext context) {
@@ -26,9 +30,10 @@ class _MyStudentViewState extends State<StudentView>{
       crossAxisSpacing: 30.0,
       children: <Widget>[
         RaisedButton(
-          child: const Text('Create forms', style: TextStyle(fontSize: 20)),
+          child: const Text('Build forms', style: TextStyle(fontSize: 20)),
           onPressed: () {
-
+            print(form.title);
+            Navigator.push(context, MaterialPageRoute(builder: (context) => BuildForm(form)));
           },
         ),
         RaisedButton(
@@ -42,6 +47,14 @@ class _MyStudentViewState extends State<StudentView>{
             child: const Text('Discover devices', style: TextStyle(fontSize: 20)),
           onPressed: () async {
             try {
+              if (await Nearby().askLocationPermission()) {
+                Scaffold.of(context).showSnackBar(SnackBar(
+                    content: Text("Location Permission granted :)")));
+              } else {
+                Scaffold.of(context).showSnackBar(SnackBar(
+                    content:
+                    Text("Location permissions not granted :(")));
+              }
               bool a = await Nearby().startDiscovery(
                 "student",
                 strategy,
@@ -53,11 +66,30 @@ class _MyStudentViewState extends State<StudentView>{
                       return Center(
                         child: Column(
                           children: <Widget>[
-                            Text("id: " + id),
+                            Icon(Icons.drag_handle, size: 35),
+                            SizedBox(
+                              height: 5,
+                            ),
+                            Text("Device found", style: TextStyle(fontSize: 20.0)),
+                            const Divider(
+                              color: Colors.black,
+                              height: 20,
+                              thickness: 1,
+                              indent: 15,
+                              endIndent: 15,
+                            ),
                             Text("Name: " + name),
+                            Text("Id: " + id),
                             Text("ServiceId: " + serviceId),
+                            const Divider(
+                              color: Colors.black,
+                              height: 20,
+                              thickness: 1,
+                              indent: 15,
+                              endIndent: 15,
+                            ),
                             RaisedButton(
-                              child: Text("Request Connection"),
+                              child: Text("Request Connection", style: TextStyle(fontSize: 20.0)),
                               onPressed: () {
                                 Navigator.pop(context);
                                 Nearby().requestConnection(
@@ -124,29 +156,18 @@ class _MyStudentViewState extends State<StudentView>{
                   //set state
                   Nearby().acceptConnection(id, onPayLoadRecieved: (endid, payload) async {
                       if (payload.type == PayloadType.BYTES) {
+                        print("got payload BYTES");
                         String str = String.fromCharCodes(payload.bytes);
-                        showSnackbar(endid + ": " + str);
-                        print("got this information: " + str);
 
-                        if (str.contains(':')) {
-                          // used for file payload as file payload is mapped as
-                          // payloadId:filename
-                          int payloadId = int.parse(str.split(':')[0]);
-                          String fileName = (str.split(':')[1]);
+                        Map<String, dynamic> decodedForm = jsonDecode(str);
+                        print("decoded form: $decodedForm");
+                        form = FormModel.fromJson(decodedForm);
+                        print("form title: " + form.title);
 
-                          if (map.containsKey(payloadId)) {
-                            if (await tempFile.exists()) {
-                              tempFile.rename(
-                                  tempFile.parent.path + "/" + fileName);
-                            } else {
-                              showSnackbar("File doesnt exist");
-                            }
-                          } else {
-                            //add to map if not already
-                            map[payloadId] = fileName;
-                          }
-                        }
+                        promptForForm(form);
+
                       } else if (payload.type == PayloadType.FILE) {
+                        print("got payload FILES");
                         showSnackbar(endid + ": File transfer started");
                         tempFile = File(payload.filePath);
                       }
@@ -188,6 +209,40 @@ class _MyStudentViewState extends State<StudentView>{
           ),
         );
       },
+    );
+  }
+
+  void promptForForm(FormModel form) {
+    showModalBottomSheet(
+      context: context,
+      builder: (builder) {
+        return Center(
+          child: Column(
+            children: <Widget>[
+              Text("Got a form titled: " + form.title + ". Do you want to open it?"),
+              Row(
+                children: <Widget>[
+                  new Expanded(child: FlatButton(
+                    onPressed: () {
+                      //return to prev window
+                      Navigator.pop(context);
+                    },
+                    padding: EdgeInsets.symmetric(vertical: 10),
+                    child: Text('Cancel', style: TextStyle(fontSize: 20.0)),
+                  ), flex: 2),
+                  new Expanded(child: RaisedButton(
+                    child: Text('Yes', style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold)),
+                    onPressed: () {
+                      Navigator.pop(context);
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => BuildForm(form)));
+                    },
+                  ), flex: 3)
+                ],
+              )
+            ],
+          ),
+        );
+      }
     );
   }
 }
