@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:qr_games/model/form.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 
 class CreateForms extends StatefulWidget{
@@ -118,6 +121,9 @@ class _CreateForms extends State<CreateForms>{
                       questionModelList.add(questionModel);
                     }
                     form = FormModel(myController.text, questionModelList);
+                    String json = jsonEncode(form);
+                    saveForm(json, form.title);
+                    Navigator.pop(context);
                   },
                 ), flex: 3)
               ],
@@ -143,6 +149,14 @@ class _CreateForms extends State<CreateForms>{
           fontWeight: FontWeight.bold
       ),
     );
+  }
+
+  void saveForm(String json, String title) async{
+    final prefs = await SharedPreferences.getInstance();
+    final key = title;
+    final value = json;
+    prefs.setString(key, value);
+    print('saved $value');
   }
 }
 

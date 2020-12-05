@@ -158,6 +158,7 @@ class _MyStudentViewState extends State<StudentView>{
                       if (payload.type == PayloadType.BYTES) {
                         print("got payload BYTES");
                         String str = String.fromCharCodes(payload.bytes);
+                        print("str: $str");
 
                         Map<String, dynamic> decodedForm = jsonDecode(str);
                         print("decoded form: $decodedForm");

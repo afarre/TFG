@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:nearby_connections/nearby_connections.dart';
 import 'package:qr_games/teacher/create_forms.dart';
 import 'package:qr_games/teacher/endpoint_list.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class TeacherView extends StatefulWidget {
   _MyTeacherViewState createState() => _MyTeacherViewState();
@@ -20,7 +21,7 @@ class _MyTeacherViewState extends State<TeacherView>{
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context){
     return GridView.count(
       crossAxisCount: 2 ,
       childAspectRatio: 3/2,
@@ -36,19 +37,31 @@ class _MyTeacherViewState extends State<TeacherView>{
           },
         ),
         RaisedButton(
-          child: const Text('Share forms', style: TextStyle(fontSize: 20)),
+          child: const Text('My forms', style: TextStyle(fontSize: 20)),
           onPressed: () {
-            print("wtf: " + createForms.getForm().title);
-            String json = jsonEncode(createForms.getForm());
-            print("Sending $json");
-            for (var endpoint in endpointList){
-              Nearby().sendBytesPayload(endpoint.id, Uint8List.fromList(json.codeUnits));
-            }
+            print("My forms");
+            test().then((result) {
+              String form;
+              setState(() {
+                if (result is String){
+                  print("result: $result");
+                  form = result.toString(); //use toString to convert as String
+                  print("result.toString ${result.toString()}");
+                }
+              });
+              String json = jsonEncode(form);
+              print("Sending $json");
+              for (var endpoint in endpointList){
+                Nearby().sendBytesPayload(endpoint.id, Uint8List.fromList(json.codeUnits));
+              }
+            });
           },
         ),
         RaisedButton(
-          child: const Text('Edit forms', style: TextStyle(fontSize: 20)),
-          onPressed: () {},
+          child: const Text('Output saved form', style: TextStyle(fontSize: 20)),
+          onPressed: () {
+            test();
+          },
         ),
         RaisedButton(
           child: const Text('Advertise device', style: TextStyle(fontSize: 20)),
@@ -69,5 +82,13 @@ class _MyTeacherViewState extends State<TeacherView>{
         ),
       ],
     );
+  }
+
+  Future test() async{
+    final prefs = await SharedPreferences.getInstance();
+    final key = 'angel';
+    final value = prefs.getString(key) ?? 0;
+    print('read: $value');
+    return value;
   }
 }
