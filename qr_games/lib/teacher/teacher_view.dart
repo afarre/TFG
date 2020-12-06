@@ -49,10 +49,9 @@ class _MyTeacherViewState extends State<TeacherView>{
                   print("result.toString ${result.toString()}");
                 }
               });
-              String json = jsonEncode(form);
-              print("Sending $json");
+              print("Sending $form");
               for (var endpoint in endpointList){
-                Nearby().sendBytesPayload(endpoint.id, Uint8List.fromList(json.codeUnits));
+                Nearby().sendBytesPayload(endpoint.id, Uint8List.fromList(form.codeUnits));
               }
             });
           },

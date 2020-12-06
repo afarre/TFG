@@ -12,7 +12,14 @@ class BuildForm extends StatefulWidget {
 
 class _BuildFormState extends State<BuildForm> {
   int id = 0;
-  OptionModel selectedOptionModel;
+  List<int> selectedOption = [];
+
+  @override
+  void initState() {
+    selectedOption = new List(widget._form.questionList.length);
+    List.filled(widget._form.questionList.length, 0);
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -23,9 +30,14 @@ class _BuildFormState extends State<BuildForm> {
         children: <Widget>[
           Text(widget._form.title),
           Column(
-            children:
-            mapQuestions(),
+            children: mapQuestions(),
           ),
+          RaisedButton(
+            child: const Text('Submit', style: TextStyle(fontSize: 20)),
+            onPressed: () {
+              //TODO: contestar el questionari ple
+            },
+          )
         ],
       ),
     );
@@ -37,9 +49,11 @@ class _BuildFormState extends State<BuildForm> {
       questionWidgetList.add(
         new Container(
           child: Column(
-            children: [
-              Text(widget._form.questionList[i].question),
-              mapOptions(widget._form.questionList[i].optionList)
+            children: <Widget>[
+              Text((widget._form.questionList[i].index + 1).toString() + ". " + widget._form.questionList[i].question),
+              Column(
+                children: mapOptions(widget._form.questionList[i].optionList, widget._form.questionList[i].index),
+              )
             ],
           ),
         )
@@ -48,19 +62,18 @@ class _BuildFormState extends State<BuildForm> {
     return questionWidgetList;
   }
 
-  mapOptions(List<OptionModel> optionList) {
+  mapOptions(List<OptionModel> optionList, int index) {
     List<RadioListTile> optionWidgetList = [];
     for (OptionModel optionModel in optionList) {
       optionWidgetList.add(
         RadioListTile(
-          value: optionModel,
-          groupValue: selectedOptionModel,
-          title: Text(optionModel.option),
-          onChanged: (currentOption) {
-            print("Current User $currentOption");
-            setSelectedOption(currentOption);
+          value: optionModel.index,
+          groupValue: selectedOption[index],
+          title: Text((optionModel.index + 1).toString() + ". " + optionModel.option),
+          onChanged: (val) {
+            print("Current User $val");
+            setSelectedOption(val, index);
           },
-          selected: selectedOptionModel == optionModel,
           activeColor: Colors.green,
         ),
       );
@@ -68,9 +81,9 @@ class _BuildFormState extends State<BuildForm> {
     return optionWidgetList;
   }
 
-  void setSelectedOption(OptionModel optionModel) {
+  void setSelectedOption(int val, int index) {
     setState(() {
-      selectedOptionModel = optionModel;
+      selectedOption[index] = val;
     });
   }
 }
