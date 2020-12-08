@@ -57,18 +57,21 @@ class QuestionModel {
 class OptionModel{
   String option;
   int index;
+  bool selected = false;
 
-  OptionModel(this.option, this.index);
+  OptionModel(this.option, this.index, this.selected);
 
   OptionModel.fromJson(Map<String, dynamic> json) {
     option = json['option'];
     index = json['index'];
+    selected = json['selected'];
   }
 
   Map<String, dynamic> toJson() =>
       {
         'option': option,
-        'index': index
+        'index': index,
+        'selected': selected
       };
 
 }

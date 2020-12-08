@@ -90,7 +90,7 @@ class EndpointListPublic extends State<EndpointList> with WidgetsBindingObserver
   }
 
   void showSnackbar(dynamic a) {
-    Scaffold.of(context).showSnackBar(SnackBar(
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text(a.toString()),
     ));
   }
@@ -121,28 +121,12 @@ class EndpointListPublic extends State<EndpointList> with WidgetsBindingObserver
                   Nearby().acceptConnection(
                     id,
                     onPayLoadRecieved: (endid, payload) async {
+                      print("received payload");
                       if (payload.type == PayloadType.BYTES) {
                         String str = String.fromCharCodes(payload.bytes);
-                        showSnackbar(endid + ": " + str);
+                        print(endid + ": " + str);
 
-                        if (str.contains(':')) {
-                          // used for file payload as file payload is mapped as
-                          // payloadId:filename
-                          int payloadId = int.parse(str.split(':')[0]);
-                          String fileName = (str.split(':')[1]);
 
-                          if (map.containsKey(payloadId)) {
-                            if (await tempFile.exists()) {
-                              tempFile.rename(
-                                  tempFile.parent.path + "/" + fileName);
-                            } else {
-                              showSnackbar("File doesnt exist");
-                            }
-                          } else {
-                            //add to map if not already
-                            map[payloadId] = fileName;
-                          }
-                        }
                       } else if (payload.type == PayloadType.FILE) {
                         showSnackbar(endid + ": File transfer started");
                         tempFile = File(payload.filePath);

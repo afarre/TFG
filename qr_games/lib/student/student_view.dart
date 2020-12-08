@@ -19,6 +19,7 @@ class _MyStudentViewState extends State<StudentView>{
   Map<int, String> map = Map();
   File tempFile; //reference to the file currently being transferred
   FormModel form;
+  String teacherId;
 
   @override
   Widget build(BuildContext context) {
@@ -32,8 +33,7 @@ class _MyStudentViewState extends State<StudentView>{
         RaisedButton(
           child: const Text('Build forms', style: TextStyle(fontSize: 20)),
           onPressed: () {
-            print(form.title);
-            Navigator.push(context, MaterialPageRoute(builder: (context) => BuildForm(form)));
+
           },
         ),
         RaisedButton(
@@ -48,10 +48,10 @@ class _MyStudentViewState extends State<StudentView>{
           onPressed: () async {
             try {
               if (await Nearby().askLocationPermission()) {
-                Scaffold.of(context).showSnackBar(SnackBar(
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                     content: Text("Location Permission granted :)")));
               } else {
-                Scaffold.of(context).showSnackBar(SnackBar(
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                     content:
                     Text("Location permissions not granted :(")));
               }
@@ -59,6 +59,8 @@ class _MyStudentViewState extends State<StudentView>{
                 "student",
                 strategy,
                 onEndpointFound: (id, name, serviceId) {
+                  Nearby().stopDiscovery();
+                  teacherId = id;
                   // show sheet automatically to request connection
                   showModalBottomSheet(
                     context: context,
@@ -128,7 +130,7 @@ class _MyStudentViewState extends State<StudentView>{
   }
 
   void showSnackbar(dynamic a) {
-    Scaffold.of(context).showSnackBar(SnackBar(
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text(a.toString()),
     ));
   }
@@ -235,7 +237,7 @@ class _MyStudentViewState extends State<StudentView>{
                     child: Text('Yes', style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold)),
                     onPressed: () {
                       Navigator.pop(context);
-                      Navigator.push(context, MaterialPageRoute(builder: (context) => BuildForm(form)));
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => BuildForm(form, teacherId)));
                     },
                   ), flex: 3)
                 ],
