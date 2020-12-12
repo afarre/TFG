@@ -1,8 +1,15 @@
+import 'dart:typed_data';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:nearby_connections/nearby_connections.dart';
+import 'package:qr_games/model/shared_preferences.dart';
+import 'package:qr_games/teacher/endpoint_list.dart';
 
 class SavedForms extends StatefulWidget {
+  List<EndpointData> endpointList;
+  SavedForms(this.endpointList);
+
   @override
   State<StatefulWidget> createState() => _SavedForms();
 }
@@ -41,13 +48,15 @@ class _SavedForms extends State<SavedForms>{
   }
 
   getKeys() {
-    getData().then((result) {
+    MySharedPreferences().getKeys().then((result) {
       result.forEach((element) {
+        Key key = Key(element);
         print("displaying ${element.toString()}");
         setState(() {
           myForms.add(
             Card(
               elevation: 5,
+              key: key,
               child: Row(
                 children: [
                   Expanded(
@@ -59,18 +68,24 @@ class _SavedForms extends State<SavedForms>{
                   Spacer(),
                   IconButton(
                     icon: Icon(Icons.edit),
-                    onPressed: _editButtonPressed,
+                    onPressed: (){
+                      _editButtonPressed(element);
+                    },
                   ),
                   IconButton(
                     icon: Icon(Icons.share),
-                    onPressed: _shareButtonPressed,
+                    onPressed: (){
+                      _shareButtonPressed(element);
+                    },
                   ),
                   IconButton(
                     icon: Icon(
                       Icons.delete,
                       color: Colors.red.shade400,
                     ),
-                    onPressed: _deleteButtonPressed,
+                    onPressed: (){
+                      _deleteButtonPressed(element);
+                    },
                   )
                 ],
               ),
@@ -81,23 +96,34 @@ class _SavedForms extends State<SavedForms>{
     });
   }
 
-  Future<Set<String>> getData() async {
-    final prefs = await SharedPreferences.getInstance();
-    final value = prefs.getKeys();
-    print("got ${value.length} results");
-    return value;
-  }
-
-
-  _editButtonPressed() {
+  _editButtonPressed(String element) {
     print("edit");
+    //TODO: Edit existing forms
   }
 
-  _shareButtonPressed(){
-    print("share");
+  _shareButtonPressed(String element){
+    print("Sending $element");
+
+    MySharedPreferences().getForm(element).then((result) {
+      String form;
+      setState(() {
+        if (result is String){
+          print("result: $result");
+          form = result.toString(); //use toString to convert as String
+          print("result.toString ${result.toString()}");
+        }
+      });
+      print("Sending $form");
+      for (var endpoint in widget.endpointList){
+        Nearby().sendBytesPayload(endpoint.id, Uint8List.fromList(form.codeUnits));
+      }
+    });
   }
 
-  _deleteButtonPressed(){
-    print("delet this");
+  _deleteButtonPressed(String element) {
+    MySharedPreferences().deleteForm(element);
+    Key key = Key(element);
+    myForms.removeWhere((card) => card.key == key);
+    setState(() {});
   }
 }

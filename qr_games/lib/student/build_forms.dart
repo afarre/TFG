@@ -41,7 +41,6 @@ class _BuildFormState extends State<BuildForm> {
           RaisedButton(
             child: const Text('Submit', style: TextStyle(fontSize: 20)),
             onPressed: () {
-              //TODO: contestar el questionari ple
               for (var i = 0; i < selectedOption.length; i++){
                 widget._form.questionList[i].optionList[selectedOption[i]].selected = true;
               }

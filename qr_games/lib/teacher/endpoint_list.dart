@@ -1,7 +1,9 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:nearby_connections/nearby_connections.dart';
+import 'package:qr_games/model/form.dart';
 
 class EndpointData {
   EndpointData(this.name, this.id, this.token, this.isIncoming);
@@ -125,6 +127,10 @@ class EndpointListPublic extends State<EndpointList> with WidgetsBindingObserver
                       if (payload.type == PayloadType.BYTES) {
                         String str = String.fromCharCodes(payload.bytes);
                         print(endid + ": " + str);
+                        Map<String, dynamic> decodedForm = jsonDecode(str);
+                        FormModel form = FormModel.fromJson(decodedForm);
+                        showSnackbar("File received from $endid. Storing in ${form.title} folder.");
+                        //TODO: Guardar el formulari a la carpeta del alumne
 
 
                       } else if (payload.type == PayloadType.FILE) {

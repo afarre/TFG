@@ -4,7 +4,6 @@ import 'package:nearby_connections/nearby_connections.dart';
 import 'package:qr_games/teacher/create_forms.dart';
 import 'package:qr_games/teacher/endpoint_list.dart';
 import 'package:qr_games/teacher/saved_forms.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class TeacherView extends StatefulWidget {
   _MyTeacherViewState createState() => _MyTeacherViewState();
@@ -38,32 +37,7 @@ class _MyTeacherViewState extends State<TeacherView>{
         RaisedButton(
           child: const Text('My forms', style: TextStyle(fontSize: 20)),
           onPressed: () {
-
-            Navigator.push(context, MaterialPageRoute(builder: (context) => SavedForms()));
-            print("My forms");
-            /*
-            test().then((result) {
-              String form;
-              setState(() {
-                if (result is String){
-                  print("result: $result");
-                  form = result.toString(); //use toString to convert as String
-                  print("result.toString ${result.toString()}");
-                }
-              });
-              print("Sending $form");
-              for (var endpoint in endpointList){
-                Nearby().sendBytesPayload(endpoint.id, Uint8List.fromList(form.codeUnits));
-              }
-            });
-
-             */
-          },
-        ),
-        RaisedButton(
-          child: const Text('Output saved form', style: TextStyle(fontSize: 20)),
-          onPressed: () {
-            test();
+            Navigator.push(context, MaterialPageRoute(builder: (context) => SavedForms(endpointList)));
           },
         ),
         RaisedButton(
@@ -83,15 +57,13 @@ class _MyTeacherViewState extends State<TeacherView>{
             endpointList = <EndpointData>[];
           },
         ),
+        RaisedButton(
+          child: const Text('test'),
+          onPressed: () {
+            //Navigator.push(context, MaterialPageRoute(builder: (context) => test()));
+          },
+        ),
       ],
     );
-  }
-
-  Future test() async{
-    final prefs = await SharedPreferences.getInstance();
-    final key = 'angel';
-    final value = prefs.getString(key) ?? 0;
-    print('read: $value');
-    return value;
   }
 }
