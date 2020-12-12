@@ -1,9 +1,9 @@
-import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:nearby_connections/nearby_connections.dart';
 import 'package:qr_games/teacher/create_forms.dart';
 import 'package:qr_games/teacher/endpoint_list.dart';
+import 'package:qr_games/teacher/saved_forms.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class TeacherView extends StatefulWidget {
@@ -38,7 +38,10 @@ class _MyTeacherViewState extends State<TeacherView>{
         RaisedButton(
           child: const Text('My forms', style: TextStyle(fontSize: 20)),
           onPressed: () {
+
+            Navigator.push(context, MaterialPageRoute(builder: (context) => SavedForms()));
             print("My forms");
+            /*
             test().then((result) {
               String form;
               setState(() {
@@ -53,6 +56,8 @@ class _MyTeacherViewState extends State<TeacherView>{
                 Nearby().sendBytesPayload(endpoint.id, Uint8List.fromList(form.codeUnits));
               }
             });
+
+             */
           },
         ),
         RaisedButton(
