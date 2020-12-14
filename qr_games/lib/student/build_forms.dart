@@ -44,9 +44,9 @@ class _BuildFormState extends State<BuildForm> {
               for (var i = 0; i < selectedOption.length; i++){
                 widget._form.questionList[i].optionList[selectedOption[i]].selected = true;
               }
-              print("sending msg to ${widget.teacherId}");
+              print("[SUBMIT] sending msg to ${widget.teacherId}");
               String json = jsonEncode(widget._form);
-              print("sending $json");
+              print("[SUBMIT] sending this form: $json");
               Nearby().sendBytesPayload(widget.teacherId, Uint8List.fromList(json.codeUnits));
             },
           )

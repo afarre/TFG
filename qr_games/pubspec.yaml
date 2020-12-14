@@ -32,6 +32,8 @@ dependencies:
   nearby_connections: ^2.0.2
   wifi_iot: ^0.1.1
   shared_preferences: ^0.5.0
+  path_provider: ^1.6.24
+  device_info: ^1.0.0
 
 dev_dependencies:
   flutter_launcher_icons: "^0.8.0"

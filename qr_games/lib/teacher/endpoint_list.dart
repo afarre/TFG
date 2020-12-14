@@ -3,43 +3,13 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:nearby_connections/nearby_connections.dart';
+import 'package:qr_games/model/connections_data.dart';
+import 'package:qr_games/model/endpoint_data.dart';
 import 'package:qr_games/model/form.dart';
-
-class EndpointData {
-  EndpointData(this.name, this.id, this.token, this.isIncoming);
-
-  final String name;
-  final String id;
-  final String token;
-  bool isIncoming;
-
-  @override
-  String toString() {
-    return 'name: ' + name +
-        '\nid: ' + id +
-        '\ntoken: ' + token +
-        '\nisIncoming: ' + isIncoming.toString();
-  }
-}
-
-class ConnectionData {
-  ConnectionData(this.id, this.status);
-
-  final String id;
-  final Status status;
-
-  @override
-  String toString() {
-    return 'id: ' + id +
-        '\nstatus: ' + status.toString();
-  }
-}
 
 class EndpointList extends StatefulWidget{
   List<EndpointData> _endpointList;
-  EndpointList(List<EndpointData> endpointList){
-    _endpointList = endpointList;
-  }
+  EndpointList(this._endpointList);
 
   createState() => EndpointListPublic(_endpointList);
 }
@@ -118,19 +88,26 @@ class EndpointListPublic extends State<EndpointList> with WidgetsBindingObserver
                   cId = id;
                   print("cId: $cId\nid: $id");
                   setState(() {
-                    endpointList.add(new EndpointData(info.endpointName, id, info.authenticationToken, info.isIncomingConnection));
+                    endpointList.add(new EndpointData(info.endpointName, id, info.authenticationToken, info.isIncomingConnection, ''));
+                    print(endpointList.last.toString());
                   });
                   Nearby().acceptConnection(
                     id,
                     onPayLoadRecieved: (endid, payload) async {
                       print("received payload");
+                      String str = String.fromCharCodes(payload.bytes);
                       if (payload.type == PayloadType.BYTES) {
-                        String str = String.fromCharCodes(payload.bytes);
                         print(endid + ": " + str);
-                        Map<String, dynamic> decodedForm = jsonDecode(str);
-                        FormModel form = FormModel.fromJson(decodedForm);
-                        showSnackbar("File received from $endid. Storing in ${form.title} folder.");
-                        //TODO: Guardar el formulari a la carpeta del alumne
+                        if(str.startsWith("UUID")){
+                          endpointList.firstWhere((element) => element.id == id).UUID = str.replaceFirst("UUID", "");
+                          print(endpointList.toString());
+                        }else{
+                          Map<String, dynamic> decodedForm = jsonDecode(str);
+                          FormModel form = FormModel.fromJson(decodedForm);
+                          //showSnackbar("File received from $endid. Storing in ${form.title} folder.");
+                          //TODO: Guardar el formulari a la carpeta del alumne
+                        }
+
 
 
                       } else if (payload.type == PayloadType.FILE) {

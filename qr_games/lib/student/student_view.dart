@@ -2,10 +2,12 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
+import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:nearby_connections/nearby_connections.dart';
 import 'package:qr_games/model/form.dart';
+import 'package:qr_games/settings/settings_view.dart';
 import 'package:qr_games/student/build_forms.dart';
 
 class StudentView extends StatefulWidget{
@@ -39,7 +41,7 @@ class _MyStudentViewState extends State<StudentView>{
         RaisedButton(
           child: const Text('Share forms', style: TextStyle(fontSize: 20)),
           onPressed: () {
-            String a = Random().nextInt(100).toString();
+            Nearby().sendBytesPayload(cId, "poia".codeUnits);
 
           },
         ),
@@ -58,9 +60,9 @@ class _MyStudentViewState extends State<StudentView>{
               bool a = await Nearby().startDiscovery(
                 "student",
                 strategy,
-                onEndpointFound: (id, name, serviceId) {
+                onEndpointFound: (endpointId, endpointName, endpointServiceId) {
                   Nearby().stopDiscovery();
-                  teacherId = id;
+                  teacherId = endpointId;
                   // show sheet automatically to request connection
                   showModalBottomSheet(
                     context: context,
@@ -80,9 +82,9 @@ class _MyStudentViewState extends State<StudentView>{
                               indent: 15,
                               endIndent: 15,
                             ),
-                            Text("Name: " + name),
-                            Text("Id: " + id),
-                            Text("ServiceId: " + serviceId),
+                            Text("Name: " + endpointName),
+                            Text("Id: " + endpointId),
+                            Text("ServiceId: " + endpointServiceId),
                             const Divider(
                               color: Colors.black,
                               height: 20,
@@ -96,11 +98,16 @@ class _MyStudentViewState extends State<StudentView>{
                                 Navigator.pop(context);
                                 Nearby().requestConnection(
                                   "student",
-                                  id,
+                                  endpointId,
                                   onConnectionInitiated: (id, info) {
                                     onConnectionInit(id, info);
                                   },
                                   onConnectionResult: (id, status) {
+                                    SettingsView.getDeviceDetails().then((value){
+                                      print("sending UUID to teacher: ${value[2]}");
+                                      Nearby().sendBytesPayload(id, Uint8List.fromList("UUID".codeUnits));
+                                      Nearby().sendBytesPayload(id, Uint8List.fromList(("UUID" + value[2]).codeUnits));
+                                    });
                                     showSnackbar(status);
                                   },
                                   onDisconnected: (id) {
@@ -115,8 +122,8 @@ class _MyStudentViewState extends State<StudentView>{
                     },
                   );
                 },
-                onEndpointLost: (id) {
-                  showSnackbar("Lost Endpoint:" + id);
+                onEndpointLost: (endpointId) {
+                  showSnackbar("Lost Endpoint:" + endpointId);
                 },
               );
               showSnackbar("DISCOVERING: " + a.toString());

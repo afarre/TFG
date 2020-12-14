@@ -3,8 +3,8 @@ import 'dart:typed_data';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:nearby_connections/nearby_connections.dart';
+import 'package:qr_games/model/endpoint_data.dart';
 import 'package:qr_games/model/shared_preferences.dart';
-import 'package:qr_games/teacher/endpoint_list.dart';
 
 class SavedForms extends StatefulWidget {
   List<EndpointData> endpointList;
@@ -102,7 +102,7 @@ class _SavedForms extends State<SavedForms>{
   }
 
   _shareButtonPressed(String element){
-    print("Sending $element");
+    print("[SHARED_BUTTON_PRESSED] Sending $element");
 
     MySharedPreferences().getForm(element).then((result) {
       String form;
@@ -113,7 +113,7 @@ class _SavedForms extends State<SavedForms>{
           print("result.toString ${result.toString()}");
         }
       });
-      print("Sending $form");
+      print("[SHARED_BUTTON_PRESSED] Sending this form: $form");
       for (var endpoint in widget.endpointList){
         Nearby().sendBytesPayload(endpoint.id, Uint8List.fromList(form.codeUnits));
       }
