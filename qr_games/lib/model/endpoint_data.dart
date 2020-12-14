@@ -1,11 +1,11 @@
 class EndpointData {
-  EndpointData(this.name, this.id, this.token, this.isIncoming, this.UUID);
+  EndpointData(this.name, this.id, this.token, this.isIncoming, this.uuid);
 
-  final String name;
-  final String id;
-  final String token;
+  String name;
+  String id;
+  String token;
   bool isIncoming;
-  String UUID;
+  String uuid;
 
   @override
   String toString() {
@@ -13,6 +13,24 @@ class EndpointData {
         '\nid: ' + id +
         '\ntoken: ' + token +
         '\nisIncoming: ' + isIncoming.toString() +
-        '\nUUID: ' + UUID;
+        '\nUUID: ' + uuid;
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'name': name,
+      'id': id,
+      'token' : token,
+      'isIncoming' : isIncoming,
+      'uuid' : uuid
+    };
+  }
+
+  EndpointData.fromJson(Map<String, dynamic> json) {
+    name = json['name'];
+    id = json['id'];
+    token = json['token'];
+    isIncoming = json['isIncoming'];
+    uuid = json['uuid'];
   }
 }

@@ -122,7 +122,7 @@ class _CreateForms extends State<CreateForms>{
                     }
                     form = FormModel(myController.text, questionModelList);
                     String json = jsonEncode(form);
-                    MySharedPreferences().saveForm(json, form.title);
+                    MySharedPreferences().setData(json, form.title);
                     Navigator.pop(context);
                   },
                 ), flex: 3)

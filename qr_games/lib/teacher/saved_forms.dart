@@ -104,7 +104,7 @@ class _SavedForms extends State<SavedForms>{
   _shareButtonPressed(String element){
     print("[SHARED_BUTTON_PRESSED] Sending $element");
 
-    MySharedPreferences().getForm(element).then((result) {
+    MySharedPreferences().getData(element).then((result) {
       String form;
       setState(() {
         if (result is String){
@@ -121,7 +121,7 @@ class _SavedForms extends State<SavedForms>{
   }
 
   _deleteButtonPressed(String element) {
-    MySharedPreferences().deleteForm(element);
+    MySharedPreferences().deleteData(element);
     Key key = Key(element);
     myForms.removeWhere((card) => card.key == key);
     setState(() {});

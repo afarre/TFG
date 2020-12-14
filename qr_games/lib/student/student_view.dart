@@ -22,6 +22,7 @@ class _MyStudentViewState extends State<StudentView>{
   File tempFile; //reference to the file currently being transferred
   FormModel form;
   String teacherId;
+  String studentName = "student";
 
   @override
   Widget build(BuildContext context) {
@@ -58,7 +59,7 @@ class _MyStudentViewState extends State<StudentView>{
                     Text("Location permissions not granted :(")));
               }
               bool a = await Nearby().startDiscovery(
-                "student",
+                studentName,
                 strategy,
                 onEndpointFound: (endpointId, endpointName, endpointServiceId) {
                   Nearby().stopDiscovery();
@@ -97,7 +98,7 @@ class _MyStudentViewState extends State<StudentView>{
                               onPressed: () {
                                 Navigator.pop(context);
                                 Nearby().requestConnection(
-                                  "student",
+                                  studentName,
                                   endpointId,
                                   onConnectionInitiated: (id, info) {
                                     onConnectionInit(id, info);
@@ -105,7 +106,6 @@ class _MyStudentViewState extends State<StudentView>{
                                   onConnectionResult: (id, status) {
                                     SettingsView.getDeviceDetails().then((value){
                                       print("sending UUID to teacher: ${value[2]}");
-                                      Nearby().sendBytesPayload(id, Uint8List.fromList("UUID".codeUnits));
                                       Nearby().sendBytesPayload(id, Uint8List.fromList(("UUID" + value[2]).codeUnits));
                                     });
                                     showSnackbar(status);

@@ -9,28 +9,33 @@ class MySharedPreferences {
     return value;
   }
 
-  Future getForm(String key) async{
+  Future getData(String key) async{
     SharedPreferences prefs = await SharedPreferences.getInstance();
     final value = prefs.getString(key) ?? 0;
     print('read: $value');
     return value;
   }
 
-  deleteForm(String key) async{
+  Future contains(String key) async{
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.containsKey(key);
+  }
+
+  void deleteData(String key) async{
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.remove(key);
     print("deleted $key");
   }
 
-  void saveForm(String json, String title) async{
+  void setData(String data, String title) async{
     final prefs = await SharedPreferences.getInstance();
     final key = title;
-    final value = json;
+    final value = data;
     prefs.setString(key, value);
     print('saved $value');
   }
 
-  void saveName(String name) async{
+  void saveUserName(String name) async{
     final prefs = await SharedPreferences.getInstance();
     final key = 'userName';
     final value = name;

@@ -6,6 +6,7 @@ import 'package:nearby_connections/nearby_connections.dart';
 import 'package:qr_games/model/connections_data.dart';
 import 'package:qr_games/model/endpoint_data.dart';
 import 'package:qr_games/model/form.dart';
+import 'package:qr_games/model/shared_preferences.dart';
 
 class EndpointList extends StatefulWidget{
   List<EndpointData> _endpointList;
@@ -51,6 +52,7 @@ class EndpointListPublic extends State<EndpointList> with WidgetsBindingObserver
         },
         onDisconnected: (id) {
           showSnackbar("Disconnected: " + id);
+          //TODO: controlar desconections (netejar de la llista de la vista)
           return new ConnectionData(id, null);
         },
       );
@@ -86,11 +88,6 @@ class EndpointListPublic extends State<EndpointList> with WidgetsBindingObserver
                 onPressed: () {
                   Navigator.pop(context);
                   cId = id;
-                  print("cId: $cId\nid: $id");
-                  setState(() {
-                    endpointList.add(new EndpointData(info.endpointName, id, info.authenticationToken, info.isIncomingConnection, ''));
-                    print(endpointList.last.toString());
-                  });
                   Nearby().acceptConnection(
                     id,
                     onPayLoadRecieved: (endid, payload) async {
@@ -98,12 +95,18 @@ class EndpointListPublic extends State<EndpointList> with WidgetsBindingObserver
                       String str = String.fromCharCodes(payload.bytes);
                       if (payload.type == PayloadType.BYTES) {
                         print(endid + ": " + str);
+
                         if(str.startsWith("UUID")){
-                          endpointList.firstWhere((element) => element.id == id).UUID = str.replaceFirst("UUID", "");
+                          handleInitialConnection(str, info, id);
+                            //TODO: Arreglar si un endpoint ja esta connectat, que no es dupliqui a la llista de endpoints
+
                           print(endpointList.toString());
                         }else{
+
+
                           Map<String, dynamic> decodedForm = jsonDecode(str);
                           FormModel form = FormModel.fromJson(decodedForm);
+
                           //showSnackbar("File received from $endid. Storing in ${form.title} folder.");
                           //TODO: Guardar el formulari a la carpeta del alumne
                         }
@@ -341,5 +344,69 @@ class EndpointListPublic extends State<EndpointList> with WidgetsBindingObserver
     }else if (state == AppLifecycleState.resumed){
       advertiseDevice();
     }
+  }
+
+  void handleInitialConnection(String str, ConnectionInfo info, String id) {
+    print("in handle with str: $str and id: $id");
+    String uuid = str.replaceFirst("UUID", "");
+    MySharedPreferences().contains(uuid).then((isRegistered){
+      if (isRegistered){
+        print("old device");
+        MySharedPreferences().getData(uuid).then((oldEndpointData){
+          Map<String, dynamic> oldDecodedEndpoint = jsonDecode(oldEndpointData);
+          print("decoded form: $oldDecodedEndpoint");
+          EndpointData endpointData = EndpointData.fromJson(oldDecodedEndpoint);
+          endpointData.name = info.endpointName;
+          endpointData.isIncoming = info.isIncomingConnection;
+          endpointData.token = info.authenticationToken;
+          endpointData.id = id;
+          MySharedPreferences().deleteData(endpointData.uuid);
+          String endpointJson = jsonEncode(endpointData);
+          MySharedPreferences().setData(endpointJson, uuid);
+          print("updated endpoint: $endpointJson");
+
+          print(endpointList.length);
+          if(endpointList.isEmpty){
+            setState(() {
+              endpointList.add(endpointData);
+            });
+          }else{
+            endpointList.forEach((element) {
+              if(element.uuid == uuid){
+                print("was already in view (duplicate)");
+                setState(() {
+                  element.name = info.endpointName;
+                  element.isIncoming = info.isIncomingConnection;
+                  element.token = info.authenticationToken;
+                  element.id = id;
+                });
+              }else{
+                print("was not displayed in view");
+                setState(() {
+                  endpointList.add(endpointData);
+                  print(endpointList.last.toString());
+                });
+              }
+            });
+          }
+        });
+      }else{
+        print("new device");
+        EndpointData endpointData = new EndpointData(info.endpointName, id, info.authenticationToken, info.isIncomingConnection, uuid);
+        String endpointJson = jsonEncode(endpointData);
+        MySharedPreferences().setData(endpointJson, uuid);
+        setState(() {
+          endpointList.add(endpointData);
+          print(endpointList.last.toString());
+        });
+        print("about to ask storage permission");
+        Nearby().askExternalStoragePermission();
+        new Directory(endpointList.firstWhere((element) => element.id == id).uuid).create()
+        // The created directory is returned as a Future.
+            .then((Directory directory) {
+          print(directory.path);
+        });
+      }
+    });
   }
 }
