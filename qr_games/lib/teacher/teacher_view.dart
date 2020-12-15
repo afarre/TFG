@@ -74,7 +74,10 @@ class _MyTeacherViewState extends State<TeacherView>{
             //FileManager.createFile("39281a04d2b8c8ba", "randForm");
             //MySharedPreferences.deleteData('39281a04d2b8c8ba');
             FileManager.listDirContents();
+            FileManager.getFileContent("39281a04d2b8c8ba", "mates");
+            FileManager.getFileContent("39281a04d2b8c8ba", "a");
             //FileManager.deleteDir("39281a04d2b8c8ba");
+
 
             //FileManager.deleteDir("/data/user/0/com.afarre.qr_games/app_flutter/39281a04d2b8c8ba");
 //            FileManager.asd("");

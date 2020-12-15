@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:qr_games/model/endpoint_data.dart';
 
 class MySharedPreferences {
 
@@ -45,5 +48,29 @@ class MySharedPreferences {
     final value = name;
     prefs.setString(key, value);
     print('saved $value');
+  }
+
+  static Future<String> getUuid(String id) async {
+    final prefs = await SharedPreferences.getInstance();
+    for (String key in prefs.getKeys()){
+      print("looking at $key");
+      if (!key.contains("#")){
+        print("in if");
+        return getData(key).then((value){
+          print("got this value: $value");
+          Map<String, dynamic> endpointJson = jsonDecode(value);
+          EndpointData endpoint = EndpointData.fromJson(endpointJson);
+          print("endpoint.id: ${endpoint.id}");
+          print("id: $id");
+          if (endpoint.id == id){
+            print("first return i al carrer");
+            return endpoint.uuid;
+          }
+          return null;
+        });
+      }else{
+        continue;
+      }
+    }
   }
 }

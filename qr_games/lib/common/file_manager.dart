@@ -7,7 +7,6 @@ import 'package:path_provider/path_provider.dart';
 
 class FileManager{
 
-
   ///Creates a directory inside the students/ folder with the specified [name]
   static createDir(String name) async {
     Directory appDocDirectory = await getApplicationDocumentsDirectory();
@@ -57,14 +56,25 @@ class FileManager{
     return File('$path/$form');
   }
 
-  static createFile(String user, String form) async{
-
+  static Future<File> createFile(String user, String formName) async{
     final directory = await getApplicationDocumentsDirectory();
-    final path = directory.path + "/$user";
+    final path = directory.path + "/students/$user/$formName.json";
 
     // Create a file, read the entire contents and print line by line
-    final file = File('$path/$form');
+    File file = File(path);
     file.create();
+    return file;
+  }
+
+  static Future<String> getFileContent(String user, String formName) async {
+    final directory = await getApplicationDocumentsDirectory();
+    final path = directory.path + "/students/$user/$formName.json";
+
+    new File(path).readAsString().then((String contents) {
+      print("contents: $contents");
+      return contents;
+    });
+
   }
 
 }

@@ -77,13 +77,13 @@ class _SavedForms extends State<SavedForms>{
                   IconButton(
                     icon: Icon(Icons.edit),
                     onPressed: (){
-                      _editButtonPressed(e);
+                      _editButtonPressed("#$e");
                     },
                   ),
                   IconButton(
                     icon: Icon(Icons.share),
                     onPressed: (){
-                      _shareButtonPressed(e);
+                      _shareButtonPressed("#$e");
                     },
                   ),
                   IconButton(
@@ -92,7 +92,7 @@ class _SavedForms extends State<SavedForms>{
                       color: Colors.red.shade400,
                     ),
                     onPressed: (){
-                      _deleteButtonPressed(e);
+                      _deleteButtonPressed("#$e");
                     },
                   )
                 ],

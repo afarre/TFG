@@ -105,7 +105,14 @@ class EndpointListPublic extends State<EndpointList> with WidgetsBindingObserver
                         }else{
                           Map<String, dynamic> decodedForm = jsonDecode(str);
                           FormModel form = FormModel.fromJson(decodedForm);
-                          print("student answered with this form: $form");
+                          print("student answered with this form: $decodedForm");
+                          MySharedPreferences.getUuid(id).then((uuid) {
+                            print("ended up with this uuid: $uuid");
+                            FileManager.listDirContents();
+                            FileManager.createFile(uuid, form.title).then((file) => {
+                              file.writeAsString(str)
+                            });
+                          });
 
                           //showSnackbar("File received from $endid. Storing in ${form.title} folder.");
                           //TODO: Guardar el formulari a la carpeta ja creada del alumne
