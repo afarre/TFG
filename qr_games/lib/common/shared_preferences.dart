@@ -2,40 +2,44 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class MySharedPreferences {
 
-  Future<Set<String>> getKeys() async {
+  ///Returns all keys contained in Shared Preferences
+  static Future<Set<String>> getKeys() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     final value = prefs.getKeys();
     print("got ${value.length} results");
     return value;
   }
 
-  Future getData(String key) async{
+  ///Gets the data associated to the specified [key]
+  static Future getData(String key) async{
     SharedPreferences prefs = await SharedPreferences.getInstance();
     final value = prefs.getString(key) ?? 0;
     print('read: $value');
     return value;
   }
 
-  Future contains(String key) async{
+  ///Returns true if the specified [key] exists
+  static Future contains(String key) async{
     SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.containsKey(key);
   }
 
-  void deleteData(String key) async{
+  ///Deletes the data associated to the specified [key]
+  static deleteData(String key) async{
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.remove(key);
     print("deleted $key");
   }
 
-  void setData(String data, String title) async{
+  ///Sets the specified [data] with it's corresponding [key]
+  static setData(String data, String key) async{
     final prefs = await SharedPreferences.getInstance();
-    final key = title;
-    final value = data;
-    prefs.setString(key, value);
-    print('saved $value');
+    prefs.setString(key, data);
+    print('saved $data');
   }
 
-  void saveUserName(String name) async{
+  ///Saved the specified [name] under the 'userName' key
+  static saveUserName(String name) async{
     final prefs = await SharedPreferences.getInstance();
     final key = 'userName';
     final value = name;

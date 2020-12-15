@@ -2,7 +2,8 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:qr_games/model/form.dart';
-import 'package:qr_games/model/shared_preferences.dart';
+
+import 'file:///C:/Users/angel/Desktop/4t/TFG/QRGames/Projecte/qr_games/lib/common/shared_preferences.dart';
 
 
 class CreateForms extends StatefulWidget{
@@ -122,7 +123,7 @@ class _CreateForms extends State<CreateForms>{
                     }
                     form = FormModel(myController.text, questionModelList);
                     String json = jsonEncode(form);
-                    MySharedPreferences().setData(json, form.title);
+                    MySharedPreferences.setData(json, '#' + form.title);
                     Navigator.pop(context);
                   },
                 ), flex: 3)

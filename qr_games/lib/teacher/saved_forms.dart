@@ -4,7 +4,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:nearby_connections/nearby_connections.dart';
 import 'package:qr_games/model/endpoint_data.dart';
-import 'package:qr_games/model/shared_preferences.dart';
+
+import 'file:///C:/Users/angel/Desktop/4t/TFG/QRGames/Projecte/qr_games/lib/common/shared_preferences.dart';
 
 class SavedForms extends StatefulWidget {
   List<EndpointData> endpointList;
@@ -48,10 +49,17 @@ class _SavedForms extends State<SavedForms>{
   }
 
   getKeys() {
-    MySharedPreferences().getKeys().then((result) {
-      result.forEach((element) {
-        Key key = Key(element);
-        print("displaying ${element.toString()}");
+    MySharedPreferences.getKeys().then((result) {
+      //result.forEach((element) { }); No se li pot fer un continue
+      for(String e in result){
+        if(e.contains("#")){
+          e = e.replaceFirst("#", "");
+        }else{
+          continue;
+        }
+
+        Key key = Key(e);
+        print("displaying ${e.toString()}");
         setState(() {
           myForms.add(
             Card(
@@ -62,20 +70,20 @@ class _SavedForms extends State<SavedForms>{
                   Expanded(
                     child: Padding(
                       padding: const EdgeInsets.fromLTRB(5, 0, 0, 0),
-                      child: Text(element.toString()),
+                      child: Text(e.toString()),
                     ),
                   ),
                   Spacer(),
                   IconButton(
                     icon: Icon(Icons.edit),
                     onPressed: (){
-                      _editButtonPressed(element);
+                      _editButtonPressed(e);
                     },
                   ),
                   IconButton(
                     icon: Icon(Icons.share),
                     onPressed: (){
-                      _shareButtonPressed(element);
+                      _shareButtonPressed(e);
                     },
                   ),
                   IconButton(
@@ -84,7 +92,7 @@ class _SavedForms extends State<SavedForms>{
                       color: Colors.red.shade400,
                     ),
                     onPressed: (){
-                      _deleteButtonPressed(element);
+                      _deleteButtonPressed(e);
                     },
                   )
                 ],
@@ -92,7 +100,7 @@ class _SavedForms extends State<SavedForms>{
             ),
           );
         });
-      });
+      }
     });
   }
 
@@ -104,7 +112,7 @@ class _SavedForms extends State<SavedForms>{
   _shareButtonPressed(String element){
     print("[SHARED_BUTTON_PRESSED] Sending $element");
 
-    MySharedPreferences().getData(element).then((result) {
+    MySharedPreferences.getData(element).then((result) {
       String form;
       setState(() {
         if (result is String){
@@ -121,7 +129,7 @@ class _SavedForms extends State<SavedForms>{
   }
 
   _deleteButtonPressed(String element) {
-    MySharedPreferences().deleteData(element);
+    MySharedPreferences.deleteData(element);
     Key key = Key(element);
     myForms.removeWhere((card) => card.key == key);
     setState(() {});

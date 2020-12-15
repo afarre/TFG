@@ -6,7 +6,9 @@ import 'package:nearby_connections/nearby_connections.dart';
 import 'package:qr_games/model/connections_data.dart';
 import 'package:qr_games/model/endpoint_data.dart';
 import 'package:qr_games/model/form.dart';
-import 'package:qr_games/model/shared_preferences.dart';
+import 'package:qr_games/common/shared_preferences.dart';
+import 'package:qr_games/common/file_manager.dart';
+
 
 class EndpointList extends StatefulWidget{
   List<EndpointData> _endpointList;
@@ -98,20 +100,16 @@ class EndpointListPublic extends State<EndpointList> with WidgetsBindingObserver
 
                         if(str.startsWith("UUID")){
                           handleInitialConnection(str, info, id);
-                            //TODO: Arreglar si un endpoint ja esta connectat, que no es dupliqui a la llista de endpoints
 
                           print(endpointList.toString());
                         }else{
-
-
                           Map<String, dynamic> decodedForm = jsonDecode(str);
                           FormModel form = FormModel.fromJson(decodedForm);
+                          print("student answered with this form: $form");
 
                           //showSnackbar("File received from $endid. Storing in ${form.title} folder.");
-                          //TODO: Guardar el formulari a la carpeta del alumne
+                          //TODO: Guardar el formulari a la carpeta ja creada del alumne
                         }
-
-
 
                       } else if (payload.type == PayloadType.FILE) {
                         showSnackbar(endid + ": File transfer started");
@@ -349,10 +347,10 @@ class EndpointListPublic extends State<EndpointList> with WidgetsBindingObserver
   void handleInitialConnection(String str, ConnectionInfo info, String id) {
     print("in handle with str: $str and id: $id");
     String uuid = str.replaceFirst("UUID", "");
-    MySharedPreferences().contains(uuid).then((isRegistered){
+    MySharedPreferences.contains(uuid).then((isRegistered){
       if (isRegistered){
         print("old device");
-        MySharedPreferences().getData(uuid).then((oldEndpointData){
+        MySharedPreferences.getData(uuid).then((oldEndpointData){
           Map<String, dynamic> oldDecodedEndpoint = jsonDecode(oldEndpointData);
           print("decoded form: $oldDecodedEndpoint");
           EndpointData endpointData = EndpointData.fromJson(oldDecodedEndpoint);
@@ -360,9 +358,9 @@ class EndpointListPublic extends State<EndpointList> with WidgetsBindingObserver
           endpointData.isIncoming = info.isIncomingConnection;
           endpointData.token = info.authenticationToken;
           endpointData.id = id;
-          MySharedPreferences().deleteData(endpointData.uuid);
+          MySharedPreferences.deleteData(endpointData.uuid);
           String endpointJson = jsonEncode(endpointData);
-          MySharedPreferences().setData(endpointJson, uuid);
+          MySharedPreferences.setData(endpointJson, uuid);
           print("updated endpoint: $endpointJson");
 
           print(endpointList.length);
@@ -394,19 +392,15 @@ class EndpointListPublic extends State<EndpointList> with WidgetsBindingObserver
         print("new device");
         EndpointData endpointData = new EndpointData(info.endpointName, id, info.authenticationToken, info.isIncomingConnection, uuid);
         String endpointJson = jsonEncode(endpointData);
-        MySharedPreferences().setData(endpointJson, uuid);
+        MySharedPreferences.setData(endpointJson, uuid);
         setState(() {
           endpointList.add(endpointData);
           print(endpointList.last.toString());
         });
-        print("about to ask storage permission");
-        Nearby().askExternalStoragePermission();
-        new Directory(endpointList.firstWhere((element) => element.id == id).uuid).create()
-        // The created directory is returned as a Future.
-            .then((Directory directory) {
-          print(directory.path);
-        });
+        FileManager.createDir(uuid);
       }
     });
   }
+
+
 }
