@@ -5,23 +5,17 @@ import 'package:qr_games/common/file_manager.dart';
 import 'package:qr_games/model/endpoint_data.dart';
 import 'package:qr_games/teacher/create_forms.dart';
 import 'package:qr_games/teacher/endpoint_list.dart';
-import 'package:qr_games/teacher/saved_forms.dart';
+import 'package:qr_games/teacher/my_forms.dart';
+import 'package:qr_games/teacher/student_management/student_answer_list.dart';
+import 'package:qr_games/common/shared_preferences.dart';
 
-class TeacherView extends StatefulWidget {
-  _MyTeacherViewState createState() => _MyTeacherViewState();
-}
-
-class _MyTeacherViewState extends State<TeacherView>{
-  List<EndpointData> endpointList = <EndpointData>[];
-  CreateForms createForms = CreateForms();
-
-  @override
-  void initState() {
-    super.initState();
-  }
+class TeacherView extends StatelessWidget {
+  final CreateForms createForms = CreateForms();
 
   @override
   Widget build(BuildContext context){
+    List<EndpointData> endpointList = <EndpointData>[];
+
     return GridView.count(
       crossAxisCount: 2 ,
       childAspectRatio: 3/2,
@@ -64,7 +58,7 @@ class _MyTeacherViewState extends State<TeacherView>{
         RaisedButton(
           child: const Text('Student forms', style: TextStyle(fontSize: 20)),
           onPressed: () {
-            //Navigator.push(context, MaterialPageRoute(builder: (context) => test()));
+            Navigator.push(context, MaterialPageRoute(builder: (context) => StudentAnswerList()));
           },
         ),
 
@@ -72,11 +66,11 @@ class _MyTeacherViewState extends State<TeacherView>{
           child: const Text('delet this'),
           onPressed: () {
             //FileManager.createFile("39281a04d2b8c8ba", "randForm");
-            //MySharedPreferences.deleteData('39281a04d2b8c8ba');
-            FileManager.listDirContents();
-            FileManager.getFileContent("39281a04d2b8c8ba", "mates");
-            FileManager.getFileContent("39281a04d2b8c8ba", "a");
-            //FileManager.deleteDir("39281a04d2b8c8ba");
+            //MySharedPreferences.deleteData('4c434612edcff4bc');
+            FileManager.listDirContents(FileManager.DISPLAY_ALL);
+            //FileManager.getFileContent("39281a04d2b8c8ba", "mates");
+            //FileManager.getFileContent("39281a04d2b8c8ba", "a");
+            //FileManager.deleteDir("4c434612edcff4bc");
 
 
             //FileManager.deleteDir("/data/user/0/com.afarre.qr_games/app_flutter/39281a04d2b8c8ba");

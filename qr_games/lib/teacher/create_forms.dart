@@ -2,8 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:qr_games/model/form.dart';
-
-import 'file:///C:/Users/angel/Desktop/4t/TFG/QRGames/Projecte/qr_games/lib/common/shared_preferences.dart';
+import 'package:qr_games/common/shared_preferences.dart';
 
 
 class CreateForms extends StatefulWidget{

@@ -19,7 +19,6 @@ class EndpointList extends StatefulWidget{
 
 class EndpointListPublic extends State<EndpointList> with WidgetsBindingObserver{
   final Strategy strategy = Strategy.P2P_STAR;
-  String cId = "0"; //currently connected device ID
   File tempFile; //reference to the file currently being transferred
   Map<int, String> map = Map();
   List<EndpointData> endpointList = <EndpointData>[];
@@ -89,7 +88,6 @@ class EndpointListPublic extends State<EndpointList> with WidgetsBindingObserver
                 child: Text("Accept Connection"),
                 onPressed: () {
                   Navigator.pop(context);
-                  cId = id;
                   Nearby().acceptConnection(
                     id,
                     onPayLoadRecieved: (endid, payload) async {
@@ -105,10 +103,10 @@ class EndpointListPublic extends State<EndpointList> with WidgetsBindingObserver
                         }else{
                           Map<String, dynamic> decodedForm = jsonDecode(str);
                           FormModel form = FormModel.fromJson(decodedForm);
-                          print("student answered with this form: $decodedForm");
+                          print("student (id: $id) answered with this form: $decodedForm");
                           MySharedPreferences.getUuid(id).then((uuid) {
                             print("ended up with this uuid: $uuid");
-                            FileManager.listDirContents();
+                            //FileManager.listDirContents();
                             FileManager.createFile(uuid, form.title).then((file) => {
                               file.writeAsString(str)
                             });

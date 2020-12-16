@@ -118,7 +118,6 @@ class _SavedForms extends State<SavedForms>{
         if (result is String){
           print("result: $result");
           form = result.toString(); //use toString to convert as String
-          print("result.toString ${result.toString()}");
         }
       });
       print("[SHARED_BUTTON_PRESSED] Sending this form: $form");

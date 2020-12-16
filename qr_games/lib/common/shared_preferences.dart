@@ -38,7 +38,7 @@ class MySharedPreferences {
   static setData(String data, String key) async{
     final prefs = await SharedPreferences.getInstance();
     prefs.setString(key, data);
-    print('saved $data');
+    print('saved data $data');
   }
 
   ///Saved the specified [name] under the 'userName' key
@@ -53,24 +53,17 @@ class MySharedPreferences {
   static Future<String> getUuid(String id) async {
     final prefs = await SharedPreferences.getInstance();
     for (String key in prefs.getKeys()){
-      print("looking at $key");
       if (!key.contains("#")){
-        print("in if");
-        return getData(key).then((value){
-          print("got this value: $value");
-          Map<String, dynamic> endpointJson = jsonDecode(value);
-          EndpointData endpoint = EndpointData.fromJson(endpointJson);
-          print("endpoint.id: ${endpoint.id}");
-          print("id: $id");
-          if (endpoint.id == id){
-            print("first return i al carrer");
-            return endpoint.uuid;
-          }
-          return null;
-        });
+        var value = await getData(key);
+        Map<String, dynamic> endpointJson = jsonDecode(value);
+        EndpointData endpoint = EndpointData.fromJson(endpointJson);
+        if (endpoint.id == id){
+          return endpoint.uuid;
+        }
       }else{
         continue;
       }
     }
+    return null;
   }
 }
