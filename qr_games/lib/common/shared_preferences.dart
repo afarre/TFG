@@ -17,7 +17,6 @@ class MySharedPreferences {
   static Future getData(String key) async{
     SharedPreferences prefs = await SharedPreferences.getInstance();
     final value = prefs.getString(key) ?? 0;
-    print('read: $value');
     return value;
   }
 
@@ -51,13 +50,16 @@ class MySharedPreferences {
   }
 
   static Future<String> getUuid(String id) async {
+    print("id: $id");
     final prefs = await SharedPreferences.getInstance();
     for (String key in prefs.getKeys()){
       if (!key.contains("#")){
         var value = await getData(key);
+        print("for key: $key, data :$value");
         Map<String, dynamic> endpointJson = jsonDecode(value);
         EndpointData endpoint = EndpointData.fromJson(endpointJson);
         if (endpoint.id == id){
+          print("${endpoint.id} equals $id, therefore returning ${endpoint.uuid}");
           return endpoint.uuid;
         }
       }else{

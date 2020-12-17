@@ -66,7 +66,6 @@ class _BuildStudentForm extends State<BuildStudentForm>{
 
   Future<String> getFutureData() async {
     String value = await FileManager.getFileContent(widget.studentName, widget.formName);
-    print("returning this value: $value");
     return value;
   }
 
@@ -95,10 +94,12 @@ class _BuildStudentForm extends State<BuildStudentForm>{
       optionWidgetList.add(
         RadioListTile(
           value: true,
-          groupValue: optionList[index].selected,
+          groupValue: optionModel.selected,
           title: Text((optionModel.index + 1).toString() + ". " + optionModel.option),
           onChanged: (val) {},
           activeColor: Colors.green,
+          selectedTileColor: Colors.transparent,
+          tileColor: Colors.transparent,
         ),
       );
     }

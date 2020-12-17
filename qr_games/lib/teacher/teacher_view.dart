@@ -26,7 +26,6 @@ class TeacherView extends StatelessWidget {
         RaisedButton(
           child: const Text('Create forms', style: TextStyle(fontSize: 20)),
           onPressed: () {
-            print("Create form view selected");
             Navigator.push(context, MaterialPageRoute(builder: (context) => createForms));
           },
         ),
@@ -39,8 +38,6 @@ class TeacherView extends StatelessWidget {
         RaisedButton(
           child: const Text('Advertise device', style: TextStyle(fontSize: 20)),
           onPressed: () async {
-            print("Advertise/view selected.");
-            print("about to ask storage permission");
             Nearby().askExternalStoragePermission();
             var navigationResult = await Navigator.push(context, MaterialPageRoute(builder: (context) => EndpointList(endpointList)));
             endpointList = navigationResult;
@@ -63,20 +60,22 @@ class TeacherView extends StatelessWidget {
         ),
 
         RaisedButton(
-          child: const Text('delet this'),
+          child: const Text('testing'),
           onPressed: () {
             //FileManager.createFile("39281a04d2b8c8ba", "randForm");
-            //MySharedPreferences.deleteData('4c434612edcff4bc');
-            FileManager.listDirContents(FileManager.DISPLAY_ALL);
+            MySharedPreferences.deleteData('4c434612edcff4bc');
+            MySharedPreferences.deleteData('39281a04d2b8c8ba');
             //FileManager.getFileContent("39281a04d2b8c8ba", "mates");
             //FileManager.getFileContent("39281a04d2b8c8ba", "a");
-            //FileManager.deleteDir("4c434612edcff4bc");
+            FileManager.deleteDir("4c434612edcff4bc");
+            FileManager.deleteDir("39281a04d2b8c8ba");
 
 
             //FileManager.deleteDir("/data/user/0/com.afarre.qr_games/app_flutter/39281a04d2b8c8ba");
 //            FileManager.asd("");
 
             //Navigator.push(context, MaterialPageRoute(builder: (context) => test()));
+            FileManager.listDirContents(FileManager.DISPLAY_ALL);
           },
         ),
 

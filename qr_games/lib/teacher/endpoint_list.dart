@@ -91,20 +91,18 @@ class EndpointListPublic extends State<EndpointList> with WidgetsBindingObserver
                   Nearby().acceptConnection(
                     id,
                     onPayLoadRecieved: (endid, payload) async {
-                      print("received payload");
                       String str = String.fromCharCodes(payload.bytes);
                       if (payload.type == PayloadType.BYTES) {
-                        print(endid + ": " + str);
+                        print("received payload from id: $endid: $str");
 
                         if(str.startsWith("UUID")){
                           handleInitialConnection(str, info, id);
 
-                          print(endpointList.toString());
                         }else{
                           Map<String, dynamic> decodedForm = jsonDecode(str);
                           FormModel form = FormModel.fromJson(decodedForm);
-                          print("student (id: $id) answered with this form: $decodedForm");
-                          MySharedPreferences.getUuid(id).then((uuid) {
+                          print("student (id: $endid) answered with this form: $decodedForm");
+                          MySharedPreferences.getUuid(endid).then((uuid) {
                             print("ended up with this uuid: $uuid");
                             //FileManager.listDirContents();
                             FileManager.createFile(uuid, form.title).then((file) => {
@@ -113,7 +111,6 @@ class EndpointListPublic extends State<EndpointList> with WidgetsBindingObserver
                           });
 
                           //showSnackbar("File received from $endid. Storing in ${form.title} folder.");
-                          //TODO: Guardar el formulari a la carpeta ja creada del alumne
                         }
 
                       } else if (payload.type == PayloadType.FILE) {
@@ -163,8 +160,7 @@ class EndpointListPublic extends State<EndpointList> with WidgetsBindingObserver
 
   @override
   Widget build(BuildContext context) {
-    print("printing list contents in view build:");
-    print(endpointList.toString());
+    print("printing list contents in view build: ${endpointList.toString()}");
     return WillPopScope(
       onWillPop: () async {
         Navigator.pop(context, endpointList);
@@ -340,7 +336,6 @@ class EndpointListPublic extends State<EndpointList> with WidgetsBindingObserver
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    print('state = $state');
     if(state == AppLifecycleState.detached || state == AppLifecycleState.inactive || state == AppLifecycleState.paused){
       print("stopped advertising");
       Nearby().stopAdvertising();
@@ -357,18 +352,16 @@ class EndpointListPublic extends State<EndpointList> with WidgetsBindingObserver
         print("old device");
         MySharedPreferences.getData(uuid).then((oldEndpointData){
           Map<String, dynamic> oldDecodedEndpoint = jsonDecode(oldEndpointData);
-          print("decoded form: $oldDecodedEndpoint");
+          print("decoded endpoint: $oldDecodedEndpoint");
           EndpointData endpointData = EndpointData.fromJson(oldDecodedEndpoint);
           endpointData.name = info.endpointName;
           endpointData.isIncoming = info.isIncomingConnection;
           endpointData.token = info.authenticationToken;
           endpointData.id = id;
-          MySharedPreferences.deleteData(endpointData.uuid);
           String endpointJson = jsonEncode(endpointData);
           MySharedPreferences.setData(endpointJson, uuid);
           print("updated endpoint: $endpointJson");
 
-          print(endpointList.length);
           if(endpointList.isEmpty){
             setState(() {
               endpointList.add(endpointData);
@@ -387,7 +380,6 @@ class EndpointListPublic extends State<EndpointList> with WidgetsBindingObserver
                 print("was not displayed in view");
                 setState(() {
                   endpointList.add(endpointData);
-                  print(endpointList.last.toString());
                 });
               }
             });
@@ -400,12 +392,9 @@ class EndpointListPublic extends State<EndpointList> with WidgetsBindingObserver
         MySharedPreferences.setData(endpointJson, uuid);
         setState(() {
           endpointList.add(endpointData);
-          print(endpointList.last.toString());
         });
         FileManager.createDir(uuid);
       }
     });
   }
-
-
 }

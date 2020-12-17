@@ -36,7 +36,7 @@ class _StudentFormList extends State<StudentFormList> {
           itemBuilder: (BuildContext context, int index){
             print("iterating on index: $index");
             return ListTile(
-              leading: Icon(Icons.folder),
+              leading: Icon(Icons.insert_drive_file),
               title: Text(forms[index]),
               onTap: (){
                 print("building form with student: ${widget.student}, and form: ${forms[index]}");

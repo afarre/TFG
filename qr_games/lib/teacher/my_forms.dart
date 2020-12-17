@@ -92,7 +92,7 @@ class _SavedForms extends State<SavedForms>{
                       color: Colors.red.shade400,
                     ),
                     onPressed: (){
-                      _deleteButtonPressed("#$e");
+                      _deleteButtonPressed("$e");
                     },
                   )
                 ],
@@ -104,19 +104,18 @@ class _SavedForms extends State<SavedForms>{
     });
   }
 
-  _editButtonPressed(String element) {
+  _editButtonPressed(String formName) {
     print("edit");
     //TODO: Edit existing forms
   }
 
-  _shareButtonPressed(String element){
-    print("[SHARED_BUTTON_PRESSED] Sending $element");
+  _shareButtonPressed(String formName){
+    print("[SHARED_BUTTON_PRESSED] Sending $formName");
 
-    MySharedPreferences.getData(element).then((result) {
+    MySharedPreferences.getData(formName).then((result) {
       String form;
       setState(() {
         if (result is String){
-          print("result: $result");
           form = result.toString(); //use toString to convert as String
         }
       });
@@ -127,9 +126,9 @@ class _SavedForms extends State<SavedForms>{
     });
   }
 
-  _deleteButtonPressed(String element) {
-    MySharedPreferences.deleteData(element);
-    Key key = Key(element);
+  _deleteButtonPressed(String formName) {
+    MySharedPreferences.deleteData(formName);
+    Key key = Key(formName);
     myForms.removeWhere((card) => card.key == key);
     setState(() {});
   }

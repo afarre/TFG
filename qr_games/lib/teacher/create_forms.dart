@@ -110,10 +110,8 @@ class _CreateForms extends State<CreateForms>{
                     List<QuestionModel> questionModelList = new List<QuestionModel>();
 
                     for(var i = 0; i < _questions.length; i++){
-                      print("For option: " + _questions[i].getQuestion());
                       List<OptionModel> optionModelList = new List<OptionModel>();
                       for(var j = 0; j < _questions[i]._optionList.length; j++){
-                        print("\tOption: " + _questions[i]._optionList[j].getOption());
                         OptionModel optionModel = OptionModel(_questions[i]._optionList[j].getOption(), j, false);
                         optionModelList.add(optionModel);
                       }
