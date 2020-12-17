@@ -60,13 +60,6 @@ class FileManager{
     }
   }
 
-  static Future<File> localFile(String user, String form) async {
-    final directory = await getApplicationDocumentsDirectory();
-    final path = directory.path + "/$user";
-    print("file path: $path");
-    return File('$path/$form');
-  }
-
   static Future<File> createFile(String user, String formName) async{
     final directory = await getApplicationDocumentsDirectory();
     final path = directory.path + "/students/$user/$formName.json";
@@ -109,5 +102,13 @@ class FileManager{
       print(e.toString());
       return null;
     }
+  }
+
+  static void renameDir(String oldName, String newName) async {
+    final directory = await getApplicationDocumentsDirectory();
+    final path = directory.path + "/students/$oldName";
+    Directory dir = Directory(path);
+    print("got dir no problem: ·${dir.path}");
+    dir.rename(directory.path + "/students/$newName");
   }
 }

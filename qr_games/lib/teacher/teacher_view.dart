@@ -61,24 +61,23 @@ class TeacherView extends StatelessWidget {
 
         RaisedButton(
           child: const Text('testing'),
-          onPressed: () {
+          onPressed: () async {
             //FileManager.createFile("39281a04d2b8c8ba", "randForm");
+            /*
             MySharedPreferences.deleteData('4c434612edcff4bc');
             MySharedPreferences.deleteData('39281a04d2b8c8ba');
-            //FileManager.getFileContent("39281a04d2b8c8ba", "mates");
-            //FileManager.getFileContent("39281a04d2b8c8ba", "a");
-            FileManager.deleteDir("4c434612edcff4bc");
-            FileManager.deleteDir("39281a04d2b8c8ba");
-
-
-            //FileManager.deleteDir("/data/user/0/com.afarre.qr_games/app_flutter/39281a04d2b8c8ba");
-//            FileManager.asd("");
-
-            //Navigator.push(context, MaterialPageRoute(builder: (context) => test()));
+            FileManager.deleteDir("student");
             FileManager.listDirContents(FileManager.DISPLAY_ALL);
+
+             */
+
+            await FileManager.deleteDir("testDir");
+
+            await FileManager.listDirContents(FileManager.DISPLAY_DIRECTORIES);
+            //Navigator.push(context, MaterialPageRoute(builder: (context) => test()));
+
           },
         ),
-
       ],
     );
   }

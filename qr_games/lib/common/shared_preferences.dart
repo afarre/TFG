@@ -49,23 +49,30 @@ class MySharedPreferences {
     print('saved $value');
   }
 
-  static Future<String> getUuid(String id) async {
+  static Future<EndpointData> getEndpoint(String id) async {
     print("id: $id");
     final prefs = await SharedPreferences.getInstance();
     for (String key in prefs.getKeys()){
-      if (!key.contains("#")){
+      if (!key.contains("#") && key != "userName"){
         var value = await getData(key);
         print("for key: $key, data :$value");
         Map<String, dynamic> endpointJson = jsonDecode(value);
         EndpointData endpoint = EndpointData.fromJson(endpointJson);
         if (endpoint.id == id){
           print("${endpoint.id} equals $id, therefore returning ${endpoint.uuid}");
-          return endpoint.uuid;
+          return endpoint;
         }
       }else{
         continue;
       }
     }
     return null;
+  }
+
+  static Future<String> getUserName() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    final value = prefs.getString("userName") ?? "unnamed";
+    print("getUserName: $value");
+    return value;
   }
 }

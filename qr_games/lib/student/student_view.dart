@@ -4,6 +4,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:nearby_connections/nearby_connections.dart';
+import 'package:qr_games/common/shared_preferences.dart';
 import 'package:qr_games/model/form.dart';
 import 'package:qr_games/settings/settings_view.dart';
 import 'package:qr_games/student/build_forms.dart';
@@ -20,7 +21,6 @@ class _MyStudentViewState extends State<StudentView>{
   File tempFile; //reference to the file currently being transferred
   FormModel form;
   String teacherId;
-  String studentName = "student";
 
   @override
   Widget build(BuildContext context) {
@@ -48,6 +48,8 @@ class _MyStudentViewState extends State<StudentView>{
             child: const Text('Discover devices', style: TextStyle(fontSize: 20)),
           onPressed: () async {
             try {
+              await Nearby().askLocationPermission();
+              /*
               if (await Nearby().askLocationPermission()) {
                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                     content: Text("Location Permission granted :)")));
@@ -56,8 +58,11 @@ class _MyStudentViewState extends State<StudentView>{
                     content:
                     Text("Location permissions not granted :(")));
               }
+              */
+              String name = await MySharedPreferences.getUserName();
+              print("name: $name");
               bool a = await Nearby().startDiscovery(
-                studentName,
+                name,
                 strategy,
                 onEndpointFound: (endpointId, endpointName, endpointServiceId) {
                   Nearby().stopDiscovery();
@@ -96,7 +101,7 @@ class _MyStudentViewState extends State<StudentView>{
                               onPressed: () {
                                 Navigator.pop(context);
                                 Nearby().requestConnection(
-                                  studentName,
+                                  name,
                                   endpointId,
                                   onConnectionInitiated: (id, info) {
                                     onConnectionInit(id, info);
@@ -106,10 +111,10 @@ class _MyStudentViewState extends State<StudentView>{
                                       print("sending UUID to teacher: ${value[2]}");
                                       Nearby().sendBytesPayload(id, Uint8List.fromList(("UUID" + value[2]).codeUnits));
                                     });
-                                    showSnackbar(status);
+                                    showSnackbar("status: $status");
                                   },
                                   onDisconnected: (id) {
-                                    showSnackbar(id);
+                                    showSnackbar("disconnected $id");
                                   },
                                 );
                               },
@@ -126,7 +131,7 @@ class _MyStudentViewState extends State<StudentView>{
               );
               showSnackbar("DISCOVERING: " + a.toString());
             } catch (e) {
-              showSnackbar(e);
+              showSnackbar("catch $e");
             }
           },
         ),
@@ -209,7 +214,7 @@ class _MyStudentViewState extends State<StudentView>{
                   try {
                     await Nearby().rejectConnection(id);
                   } catch (e) {
-                    showSnackbar(e);
+                    showSnackbar("another catch $e");
                   }
                 },
               ),

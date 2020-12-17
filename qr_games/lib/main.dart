@@ -26,7 +26,7 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(
-          title: const Text('Nearby Connections example app'),
+          title: const Text('QR Games'),
         ),
         body: getPage(_currentIndex),
         bottomNavigationBar: BottomNavigationBar(

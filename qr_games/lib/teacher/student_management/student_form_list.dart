@@ -31,6 +31,12 @@ class _StudentFormList extends State<StudentFormList> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+        appBar: AppBar(
+          leading: IconButton(icon: Icon(Icons.arrow_back), onPressed: (){
+            Navigator.pop(context);
+          },),
+          title: Text('${widget.student}\'s list'),
+        ),
         body: ListView.builder(
           itemCount: forms.length,
           itemBuilder: (BuildContext context, int index){

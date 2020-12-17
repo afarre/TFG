@@ -5,6 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:nearby_connections/nearby_connections.dart';
+import 'package:qr_games/common/shared_preferences.dart';
 import 'package:wifi_iot/wifi_iot.dart';
 
 
@@ -39,9 +40,15 @@ class SettingsView extends StatefulWidget{
 }
 
 class _SettingsView extends State<SettingsView>{
-  String _name = "teacher";
   bool _wiFiIsEnabled = false;
   bool _locationIsEnabled = false;
+  bool displayFuture = true;
+  final myController = TextEditingController();
+
+  Future<String> getName() async{
+    String name = await MySharedPreferences.getUserName();
+    return name;
+  }
 
   @override
   initState() {
@@ -64,16 +71,30 @@ class _SettingsView extends State<SettingsView>{
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text("Name"),
-                TextField(
-                  decoration: new InputDecoration(
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.blue, width: 1.5),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.grey, width: 1.0),
-                    ),
-                    hintText: 'Your name',
-                  ),
+                FutureBuilder(
+                  future: getName(),
+                  builder: (BuildContext context, AsyncSnapshot<String> snapshot){
+                    if(snapshot.hasData && displayFuture){
+                      print("building future with data");
+                      myController.text = snapshot.data;
+                    }
+                    return TextField(
+                      controller: myController,
+                      decoration: new InputDecoration(
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.blue, width: 1.5),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: Colors.grey, width: 1.0),
+                        ),
+                        hintText: 'Your name',
+                      ),
+                      onTap: (){
+                        displayFuture = false;
+                      },
+                      onSubmitted: nameSubmitted,
+                    );
+                  }
                 ),
               ],
             ),
@@ -138,6 +159,11 @@ class _SettingsView extends State<SettingsView>{
         ],
       ),
     );
+  }
+
+  void nameSubmitted(String value) {
+    MySharedPreferences.saveUserName(myController.text);
+    displayFuture = true;
   }
 }
 

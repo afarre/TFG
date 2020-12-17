@@ -48,6 +48,7 @@ class _BuildFormState extends State<BuildForm> {
               String json = jsonEncode(widget._form);
               print("[SUBMIT] sending this form: $json");
               Nearby().sendBytesPayload(widget.teacherId, Uint8List.fromList(json.codeUnits));
+              Navigator.pop(context);
             },
           )
         ],

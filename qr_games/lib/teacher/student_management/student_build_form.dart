@@ -30,6 +30,7 @@ class _BuildStudentForm extends State<BuildStudentForm>{
         future: getFutureData(),
         builder: (BuildContext context, AsyncSnapshot<String> snapshot){
           List<Widget> widgets;
+          print("you flama too?");
           if (snapshot.hasData) {
             Map<String, dynamic> decodedForm = jsonDecode(snapshot.data);
             form = FormModel.fromJson(decodedForm);

@@ -22,7 +22,6 @@ class EndpointListPublic extends State<EndpointList> with WidgetsBindingObserver
   File tempFile; //reference to the file currently being transferred
   Map<int, String> map = Map();
   List<EndpointData> endpointList = <EndpointData>[];
-  String name = "teacher";
 
   EndpointListPublic(this.endpointList);
 
@@ -41,6 +40,7 @@ class EndpointListPublic extends State<EndpointList> with WidgetsBindingObserver
 
   //primer pop up
   void advertiseDevice() async{
+    String name = await MySharedPreferences.getUserName();
     try {
       bool a = await Nearby().startAdvertising(
         name,
@@ -53,6 +53,12 @@ class EndpointListPublic extends State<EndpointList> with WidgetsBindingObserver
         },
         onDisconnected: (id) {
           showSnackbar("Disconnected: " + id);
+          MySharedPreferences.getEndpoint(id).then((value) => {
+            setState(() {
+              endpointList.remove(value);
+            })
+          });
+
           //TODO: controlar desconections (netejar de la llista de la vista)
           return new ConnectionData(id, null);
         },
@@ -102,10 +108,10 @@ class EndpointListPublic extends State<EndpointList> with WidgetsBindingObserver
                           Map<String, dynamic> decodedForm = jsonDecode(str);
                           FormModel form = FormModel.fromJson(decodedForm);
                           print("student (id: $endid) answered with this form: $decodedForm");
-                          MySharedPreferences.getUuid(endid).then((uuid) {
-                            print("ended up with this uuid: $uuid");
+                          MySharedPreferences.getEndpoint(endid).then((endpoint) {
+                            print("ended up with this uuid: ${endpoint.uuid}");
                             //FileManager.listDirContents();
-                            FileManager.createFile(uuid, form.title).then((file) => {
+                            FileManager.createFile(endpoint.uuid, form.title).then((file) => {
                               file.writeAsString(str)
                             });
                           });
@@ -351,17 +357,7 @@ class EndpointListPublic extends State<EndpointList> with WidgetsBindingObserver
       if (isRegistered){
         print("old device");
         MySharedPreferences.getData(uuid).then((oldEndpointData){
-          Map<String, dynamic> oldDecodedEndpoint = jsonDecode(oldEndpointData);
-          print("decoded endpoint: $oldDecodedEndpoint");
-          EndpointData endpointData = EndpointData.fromJson(oldDecodedEndpoint);
-          endpointData.name = info.endpointName;
-          endpointData.isIncoming = info.isIncomingConnection;
-          endpointData.token = info.authenticationToken;
-          endpointData.id = id;
-          String endpointJson = jsonEncode(endpointData);
-          MySharedPreferences.setData(endpointJson, uuid);
-          print("updated endpoint: $endpointJson");
-
+          EndpointData endpointData = updateEndpointData(oldEndpointData, info, id, uuid);
           if(endpointList.isEmpty){
             setState(() {
               endpointList.add(endpointData);
@@ -393,8 +389,25 @@ class EndpointListPublic extends State<EndpointList> with WidgetsBindingObserver
         setState(() {
           endpointList.add(endpointData);
         });
-        FileManager.createDir(uuid);
+        FileManager.createDir(info.endpointName);
       }
     });
+  }
+
+  EndpointData updateEndpointData(String oldEndpointData, ConnectionInfo info, String id, String uuid) {
+    Map<String, dynamic> oldDecodedEndpoint = jsonDecode(oldEndpointData);
+    print("decoded endpoint: $oldDecodedEndpoint");
+    EndpointData endpointData = EndpointData.fromJson(oldDecodedEndpoint);
+    print("endpointData.name: ${endpointData.name}");
+    print("info.endpointName: ${info.endpointName}");
+    FileManager.renameDir(endpointData.name, info.endpointName);
+    endpointData.name = info.endpointName;
+    endpointData.isIncoming = info.isIncomingConnection;
+    endpointData.token = info.authenticationToken;
+    endpointData.id = id;
+    String endpointJson = jsonEncode(endpointData);
+    MySharedPreferences.setData(endpointJson, uuid);
+    print("updated endpoint: $endpointJson");
+    return endpointData;
   }
 }
