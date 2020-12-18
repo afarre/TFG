@@ -29,7 +29,6 @@ class EndpointListPublic extends State<EndpointList> with WidgetsBindingObserver
   void initState(){
     WidgetsBinding.instance.addObserver(this);
     super.initState();
-    advertiseDevice();
   }
 
   @override

@@ -32,16 +32,15 @@ class _MyStudentViewState extends State<StudentView>{
       crossAxisSpacing: 30.0,
       children: <Widget>[
         RaisedButton(
-          child: const Text('Build forms', style: TextStyle(fontSize: 20)),
+          child: const Text('See received forms', style: TextStyle(fontSize: 20)),
           onPressed: () {
 
           },
         ),
         RaisedButton(
-          child: const Text('Share forms', style: TextStyle(fontSize: 20)),
+          child: const Text('Disconnect from teacher', style: TextStyle(fontSize: 20)),
           onPressed: () {
-            Nearby().sendBytesPayload(cId, "poia".codeUnits);
-
+            Nearby().disconnectFromEndpoint(cId);
           },
         ),
         RaisedButton(
@@ -135,6 +134,12 @@ class _MyStudentViewState extends State<StudentView>{
             }
           },
         ),
+        RaisedButton(
+          child: const Text('Stop discovering', style: TextStyle(fontSize: 20)),
+          onPressed: () {
+            Nearby().stopDiscovery();
+          },
+        ),
       ],
     );
   }
@@ -164,7 +169,6 @@ class _MyStudentViewState extends State<StudentView>{
                 onPressed: () {
                   Navigator.pop(context);
                   cId = id;
-                  print("cId: $cId\nid: $id");
                   //set state
                   Nearby().acceptConnection(id, onPayLoadRecieved: (endid, payload) async {
                       if (payload.type == PayloadType.BYTES) {

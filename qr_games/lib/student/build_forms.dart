@@ -7,8 +7,8 @@ import 'package:qr_games/model/form.dart';
 
 
 class BuildForm extends StatefulWidget {
-  FormModel _form;
-  String teacherId;
+  final FormModel _form;
+  final String teacherId;
   BuildForm(this._form, this.teacherId);
 
 
@@ -22,8 +22,7 @@ class _BuildFormState extends State<BuildForm> {
 
   @override
   void initState() {
-    selectedOption = new List(widget._form.questionList.length);
-    List.filled(widget._form.questionList.length, -1);
+    selectedOption = List.filled(widget._form.questionList.length, -1);
     super.initState();
   }
 
@@ -42,6 +41,9 @@ class _BuildFormState extends State<BuildForm> {
             child: const Text('Submit', style: TextStyle(fontSize: 20)),
             onPressed: () {
               for (var i = 0; i < selectedOption.length; i++){
+                if(selectedOption[i] == -1){
+                  continue;
+                }
                 widget._form.questionList[i].optionList[selectedOption[i]].selected = true;
               }
               print("[SUBMIT] sending msg to ${widget.teacherId}");
