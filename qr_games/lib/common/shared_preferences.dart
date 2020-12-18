@@ -72,7 +72,7 @@ class MySharedPreferences {
   static Future<String> getUserName() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     final value = prefs.getString("userName") ?? "unnamed";
-    print("getUserName: $value");
+    //print("getUserName: $value");
     return value;
   }
 }

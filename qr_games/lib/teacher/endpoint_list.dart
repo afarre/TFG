@@ -47,20 +47,17 @@ class EndpointListPublic extends State<EndpointList> with WidgetsBindingObserver
         strategy,
         onConnectionInitiated: onConnectionInit,
         onConnectionResult: (id, status) {
-          showSnackbar(status);
-          showSnackbar(id);
-          return new ConnectionData(id, status);
+          showSnackbar("Connected students: ${endpointList.length + 1}");
+//          return new ConnectionData(id, status);
         },
         onDisconnected: (id) {
-          showSnackbar("Disconnected: " + id);
           MySharedPreferences.getEndpoint(id).then((value) => {
+          showSnackbar("Disconnected: " + value.name),
             setState(() {
-              endpointList.remove(value);
+              endpointList.removeWhere((element) => element.uuid == value.uuid);
             })
           });
-
-          //TODO: controlar desconections (netejar de la llista de la vista)
-          return new ConnectionData(id, null);
+//          return new ConnectionData(id, null);
         },
       );
       showSnackbar("ADVERTISING: " + a.toString());
@@ -109,9 +106,9 @@ class EndpointListPublic extends State<EndpointList> with WidgetsBindingObserver
                           FormModel form = FormModel.fromJson(decodedForm);
                           print("student (id: $endid) answered with this form: $decodedForm");
                           MySharedPreferences.getEndpoint(endid).then((endpoint) {
-                            print("ended up with this uuid: ${endpoint.uuid}");
+                            print("ended up with this name: ${endpoint.name}");
                             //FileManager.listDirContents();
-                            FileManager.createFile(endpoint.uuid, form.title).then((file) => {
+                            FileManager.createFile(endpoint.name, form.title).then((file) => {
                               file.writeAsString(str)
                             });
                           });

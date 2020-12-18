@@ -75,7 +75,7 @@ class _SettingsView extends State<SettingsView>{
                   future: getName(),
                   builder: (BuildContext context, AsyncSnapshot<String> snapshot){
                     if(snapshot.hasData && displayFuture){
-                      print("building future with data");
+                      //print("building future with data");
                       myController.text = snapshot.data;
                     }
                     return TextField(
