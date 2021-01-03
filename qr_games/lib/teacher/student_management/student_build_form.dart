@@ -11,35 +11,37 @@ class BuildStudentForm extends StatefulWidget {
   BuildStudentForm(this.studentName, this.formName);
 
   @override
-  State<StatefulWidget> createState() => _BuildStudentForm(studentName, formName);
+  State<StatefulWidget> createState() => _BuildStudentForm();
 
 }
 
 class _BuildStudentForm extends State<BuildStudentForm>{
-  FormModel form;
-  final String studentName;
-  final String formName;
-  _BuildStudentForm(this.studentName, this.formName);
+  FormModel _form;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(icon: Icon(Icons.arrow_back), onPressed: (){
+          Navigator.pop(context);
+        },),
+        title: Text('${widget.studentName} > ${widget.formName.replaceFirst(".json", "")}'),
+      ),
       resizeToAvoidBottomPadding: true,
       backgroundColor: Colors.white,
       body: FutureBuilder<String>(
-        future: getFutureData(),
+        future: _getFutureData(),
         builder: (BuildContext context, AsyncSnapshot<String> snapshot){
           List<Widget> widgets;
           print("you flama too?");
           if (snapshot.hasData) {
             Map<String, dynamic> decodedForm = jsonDecode(snapshot.data);
-            form = FormModel.fromJson(decodedForm);
+            _form = FormModel.fromJson(decodedForm);
             widgets = <Widget>[
               Column(
                   children: <Widget>[
-                  Text(form.title),
                   Column(
-                    children: mapQuestions(),
+                    children: _mapQuestions(),
                   ),
                 ],
               )
@@ -65,21 +67,21 @@ class _BuildStudentForm extends State<BuildStudentForm>{
     );
   }
 
-  Future<String> getFutureData() async {
+  Future<String> _getFutureData() async {
     String value = await FileManager.getFileContent(widget.studentName, widget.formName);
     return value;
   }
 
-  mapQuestions() {
+  _mapQuestions() {
     List<Container> questionWidgetList = [];
-    for (var i = 0; i < form.questionList.length; i++){
+    for (var i = 0; i < _form.questionList.length; i++){
       questionWidgetList.add(
           new Container(
             child: Column(
               children: <Widget>[
-                Text((form.questionList[i].index + 1).toString() + ". " + form.questionList[i].question),
+                Text((_form.questionList[i].index + 1).toString() + ". " + _form.questionList[i].question),
                 Column(
-                  children: mapOptions(form.questionList[i].optionList, form.questionList[i].index),
+                  children: _mapOptions(_form.questionList[i].optionList, _form.questionList[i].index),
                 )
               ],
             ),
@@ -89,7 +91,7 @@ class _BuildStudentForm extends State<BuildStudentForm>{
     return questionWidgetList;
   }
 
-  mapOptions(List<OptionModel> optionList, int index) {
+  _mapOptions(List<OptionModel> optionList, int index) {
     List<RadioListTile> optionWidgetList = [];
     for (OptionModel optionModel in optionList) {
       optionWidgetList.add(

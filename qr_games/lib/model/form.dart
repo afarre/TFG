@@ -43,7 +43,7 @@ class QuestionModel {
     index = json['index'];
   }
 
-  Map toJson() {
+  Map<String, dynamic> toJson() {
     List<Map> options = this.optionList != null ? this.optionList.map((i) => i.toJson()).toList() : null;
 
     return {

@@ -64,7 +64,6 @@ class FileManager{
     final directory = await getApplicationDocumentsDirectory();
     final path = directory.path + "/students/$user/$formName.json";
 
-    // Create a file, read the entire contents and print line by line
     File file = File(path);
     file.create();
     return file;
@@ -104,6 +103,7 @@ class FileManager{
     }
   }
 
+  ///Renamed the specified [oldName] with the given [newName]
   static void renameDir(String oldName, String newName) async {
     final directory = await getApplicationDocumentsDirectory();
     final path = directory.path + "/students/$oldName";

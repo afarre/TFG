@@ -42,8 +42,8 @@ class SettingsView extends StatefulWidget{
 class _SettingsView extends State<SettingsView>{
   bool _wiFiIsEnabled = false;
   bool _locationIsEnabled = false;
-  bool displayFuture = true;
-  final myController = TextEditingController();
+  bool _displayFuture = true;
+  final _myController = TextEditingController();
 
   Future<String> getName() async{
     String name = await MySharedPreferences.getUserName();
@@ -74,40 +74,56 @@ class _SettingsView extends State<SettingsView>{
                 FutureBuilder(
                   future: getName(),
                   builder: (BuildContext context, AsyncSnapshot<String> snapshot){
-                    if(snapshot.hasData && displayFuture){
+                    if(snapshot.hasData && _displayFuture){
                       //print("building future with data");
-                      myController.text = snapshot.data;
+                      _myController.text = snapshot.data;
+                      return TextField(
+                        controller: _myController,
+                        decoration: new InputDecoration(
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.blue, width: 1.5),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.grey, width: 1.0),
+                          ),
+                        ),
+                        onTap: (){
+                          _displayFuture = false;
+                        },
+                        onSubmitted: nameSubmitted,
+                      );
+                    }else{
+                      return TextField(
+                        controller: _myController,
+                        decoration: new InputDecoration(
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.blue, width: 1.5),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.grey, width: 1.0),
+                          ),
+                          hintText: 'Your name',
+                        ),
+                        onTap: (){
+                          _displayFuture = false;
+                        },
+                        onSubmitted: nameSubmitted,
+                      );
                     }
-                    return TextField(
-                      controller: myController,
-                      decoration: new InputDecoration(
-                        focusedBorder: OutlineInputBorder(
-                          borderSide: BorderSide(color: Colors.blue, width: 1.5),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderSide: BorderSide(color: Colors.grey, width: 1.0),
-                        ),
-                        hintText: 'Your name',
-                      ),
-                      onTap: (){
-                        displayFuture = false;
-                      },
-                      onSubmitted: nameSubmitted,
-                    );
                   }
                 ),
               ],
             ),
           ),
           new Divider(height: 15.0,color: Colors.blueGrey),
-          getWiFi(),
-          getLocation(),
+          _getWiFi(),
+          _getLocation(),
         ],
       ),
     );
   }
 
-  getWiFi() {
+  _getWiFi() {
     WiFiForIoTPlugin.isEnabled().then((val) => setState(() {
       _wiFiIsEnabled = val;
     }));
@@ -136,7 +152,7 @@ class _SettingsView extends State<SettingsView>{
     );
   }
 
-  getLocation() {
+  _getLocation() {
     return ListTile(
       title: Row(
         children: [
@@ -162,8 +178,8 @@ class _SettingsView extends State<SettingsView>{
   }
 
   void nameSubmitted(String value) {
-    MySharedPreferences.saveUserName(myController.text);
-    displayFuture = true;
+    MySharedPreferences.setUserName(_myController.text);
+    _displayFuture = true;
   }
 }
 

@@ -1,8 +1,8 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:qr_games/model/form.dart';
 import 'package:qr_games/common/shared_preferences.dart';
+import 'package:qr_games/model/form.dart';
 
 
 class CreateForms extends StatefulWidget{
@@ -22,25 +22,24 @@ class _CreateForms extends State<CreateForms>{
   final _formKey = GlobalKey<FormState>();
   FormModel form;
   List<Question> _questions = [];
-  final myController = TextEditingController();
+  final _myController = TextEditingController();
 
   @override
   void dispose() {
     // Clean up the controller when the widget is disposed.
-    myController.dispose();
+    _myController.dispose();
     super.dispose();
   }
 
-  void removeQuestion(index) {
-    print("Removing question " + index.hashCode.toString());
-    setState(() {
-      _questions.remove(index);
-    });
+  void _removeQuestion(Question question) {
+    //setState(() {
+    _questions.remove(question);
+    //});
   }
 
-  void addQuestion() {
+  void _addQuestion() {
     setState(() {
-      Question question = Question(removeQuestion, _questions.length);
+      Question question = Question(_removeQuestion, _questions.length);
       _questions.add(question);
       print("Adding question " + question.hashCode.toString());
     });
@@ -48,7 +47,7 @@ class _CreateForms extends State<CreateForms>{
 
   @override
   void initState() {
-    addQuestion(); //Initialize with 1 item
+    _addQuestion(); //Initialize with 1 item
     super.initState();
   }
 
@@ -57,6 +56,7 @@ class _CreateForms extends State<CreateForms>{
   Widget build(BuildContext context) {
     for (var i = 0; i < _questions.length; i++){
       print("Iterating on scaffold over: " + _questions[i].hashCode.toString());
+      print("Son: ${_questions[i]._question.hashCode.toString()}");
     }
     return Scaffold(
       key: _formKey,
@@ -82,8 +82,27 @@ class _CreateForms extends State<CreateForms>{
             Row(
               children: <Widget>[
                 new FlatButton(
-                  onPressed: () => addQuestion(),
+                  onPressed: () => _addQuestion(),
                   child: new Icon(Icons.ac_unit),
+                ),
+                new FlatButton(
+                  onPressed: () {
+                    print("Displaying question list items:");
+                    for (var i = 0; i < _questions.length; i++){
+                      print("Parent: " + _questions[i].hashCode.toString());
+                      print("Son: ${_questions[i]._question.hashCode.toString()}");
+                    }
+                  },
+                  child: new Icon(Icons.aspect_ratio),
+                ),
+                new FlatButton(
+                  onPressed: () {
+                    print("Set state");
+                    setState(() {
+
+                    });
+                  },
+                  child: new Icon(Icons.widgets),
                 ),
               ],
             ),
@@ -118,7 +137,7 @@ class _CreateForms extends State<CreateForms>{
                       QuestionModel questionModel = QuestionModel(_questions[i].getQuestion(), optionModelList, i);
                       questionModelList.add(questionModel);
                     }
-                    form = FormModel(myController.text, questionModelList);
+                    form = FormModel(_myController.text, questionModelList);
                     String json = jsonEncode(form);
                     MySharedPreferences.setData(json, '#' + form.title);
                     Navigator.pop(context);
@@ -134,7 +153,7 @@ class _CreateForms extends State<CreateForms>{
 
   _displayTitle(){
     return TextField(
-      controller: myController,
+      controller: _myController,
       maxLines: null,
       autofocus: true,
       decoration: InputDecoration(
@@ -154,7 +173,7 @@ class Question extends StatefulWidget {
   final int index;
   final Function(Question) removeQuestion;
   List<Option> _optionList = [];
-  String _myQuestion;
+  String _myQuestionStr;
   _Question _question;
 
   Question(this.removeQuestion, this.index);
@@ -165,11 +184,11 @@ class Question extends StatefulWidget {
   }
 
   _Question createState(){
-    _question = _Question(index, remove, updateOptionList, myQuestion);
+    _question = _Question(index, remove, _updateOptionList, _myQuestion);
     return _question;
   }
 
-  void updateOptionList(List<Option> optionList){
+  void _updateOptionList(List<Option> optionList){
     _optionList = optionList;
     for(var i = 0; i < _optionList.length; i++){
       print("list size " + _optionList.length.toString() + " with component: " + _optionList[i].hashCode.toString());
@@ -178,11 +197,11 @@ class Question extends StatefulWidget {
 
   String getQuestion() {
     _question.getOption();
-    return _myQuestion;
+    return _myQuestionStr;
   }
 
-  myQuestion(String question) {
-    this._myQuestion = question;
+  _myQuestion(String question) {
+    this._myQuestionStr = question;
   }
 }
 
@@ -196,37 +215,36 @@ class _Question extends State<Question> {
   _Question(this.questionIndex, this.remove, this.updateOptionList, this.myQuestion);
   List<Option> _optionList = [];
 
-  void removeOption() {
+  void _removeOption() {
     print("Removing last option");
     setState(() {
       _optionList.removeLast();
     });
   }
 
-  void addOption() {
+  void _addOption() {
     setState(() {
       Option option = Option(_optionList.length + 1);
       updateOptionList(_optionList);
       _optionList.add(option);
-      print("Adding option " + option.hashCode.toString());
     });
   }
 
   @override
   void initState() {
-    addOption(); //Initialize with 1 item
+    _addOption(); //Initialize with 1 item
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: Colors.accents.elementAt(3 * questionIndex),
+    return Card(
       child: Column(
         children: <Widget>[
           Row(
             children: <Widget>[
-              Text(this.hashCode.toString()),
+              Text("q" + widget.hashCode.toString()),
+              Text("_q" + this.hashCode.toString()),
               Flexible(
                 flex: 2,
                 child: new TextFormField(
@@ -242,11 +260,13 @@ class _Question extends State<Question> {
                 ),
               ),
               new IconButton(
-                icon: new Icon(Icons.delete),
-                onPressed: (){
-                  print("delete pressed");
-                  remove();
-                }
+                  icon: new Icon(Icons.delete),
+                  onPressed: (){
+                    setState(() {
+                      print("delete pressed");
+                      remove();
+                    });
+                  }
               ),
             ],
           ),
@@ -263,7 +283,7 @@ class _Question extends State<Question> {
               new FlatButton(
                 onPressed: (){
                   setState(() {
-                    addOption();
+                    _addOption();
                   });
                 },
                 child: new Icon(Icons.add),
@@ -271,7 +291,7 @@ class _Question extends State<Question> {
               new FlatButton(
                 onPressed: (){
                   setState(() {
-                    removeOption();
+                    _removeOption();
                   });
                 },
                 child: new Icon(Icons.remove),
@@ -314,28 +334,28 @@ class Option extends StatefulWidget {
 
 class _Option extends State<Option> {
   int _numOptions;
-  final Function(String) myOption;
-  final myController = TextEditingController();
-  _Option(this._numOptions, this.myOption);
+  final Function(String) _myOption;
+  final _myController = TextEditingController();
+  _Option(this._numOptions, this._myOption);
 
   @override
   Widget build(BuildContext context) {
     return Padding(padding: EdgeInsets.only(left: 15),
       child: new TextFormField(
-        controller: myController,
+        controller: _myController,
         maxLines: null,
         decoration: InputDecoration(
-        border: InputBorder.none,
-        hintText: 'Option',
-        isDense: true,
-        prefixIcon:Text(_numOptions.toString() + ". "),
-        prefixIconConstraints: BoxConstraints(minWidth: 0, minHeight: 0),
+          border: InputBorder.none,
+          hintText: 'Option',
+          isDense: true,
+          prefixIcon:Text(_numOptions.toString() + ". "),
+          prefixIconConstraints: BoxConstraints(minWidth: 0, minHeight: 0),
         ),
       ),
     );
   }
 
   void getOption() {
-    myOption(myController.text);
+    _myOption(_myController.text);
   }
 }

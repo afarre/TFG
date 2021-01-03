@@ -7,9 +7,9 @@ import 'package:qr_games/model/form.dart';
 
 
 class BuildForm extends StatefulWidget {
-  final FormModel _form;
+  final FormModel form;
   final String teacherId;
-  BuildForm(this._form, this.teacherId);
+  BuildForm(this.form, this.teacherId);
 
 
   @override
@@ -17,37 +17,42 @@ class BuildForm extends StatefulWidget {
 }
 
 class _BuildFormState extends State<BuildForm> {
-  int id = 0;
-  List<int> selectedOption = [];
+  List<int> _selectedOption = [];
 
   @override
   void initState() {
-    selectedOption = List.filled(widget._form.questionList.length, -1);
+    _selectedOption = List.filled(widget.form.questionList.length, -1);
+
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(icon: Icon(Icons.arrow_back), onPressed: (){
+          Navigator.pop(context);
+        },),
+        title: Text(widget.form.title),
+      ),
       resizeToAvoidBottomPadding: true,
       backgroundColor: Colors.white,
       body: Column(
         children: <Widget>[
-          Text(widget._form.title),
           Column(
             children: mapQuestions(),
           ),
           RaisedButton(
             child: const Text('Submit', style: TextStyle(fontSize: 20)),
             onPressed: () {
-              for (var i = 0; i < selectedOption.length; i++){
-                if(selectedOption[i] == -1){
+              for (var i = 0; i < _selectedOption.length; i++){
+                if(_selectedOption[i] == -1){
                   continue;
                 }
-                widget._form.questionList[i].optionList[selectedOption[i]].selected = true;
+                widget.form.questionList[i].optionList[_selectedOption[i]].selected = true;
               }
               print("[SUBMIT] sending msg to ${widget.teacherId}");
-              String json = jsonEncode(widget._form);
+              String json = jsonEncode(widget.form);
               print("[SUBMIT] sending this form: $json");
               Nearby().sendBytesPayload(widget.teacherId, Uint8List.fromList(json.codeUnits));
               Navigator.pop(context);
@@ -60,14 +65,14 @@ class _BuildFormState extends State<BuildForm> {
 
   mapQuestions() {
     List<Container> questionWidgetList = [];
-    for (var i = 0; i < widget._form.questionList.length; i++){
+    for (var i = 0; i < widget.form.questionList.length; i++){
       questionWidgetList.add(
         new Container(
           child: Column(
             children: <Widget>[
-              Text((widget._form.questionList[i].index + 1).toString() + ". " + widget._form.questionList[i].question),
+              Text((widget.form.questionList[i].index + 1).toString() + ". " + widget.form.questionList[i].question),
               Column(
-                children: mapOptions(widget._form.questionList[i].optionList, widget._form.questionList[i].index),
+                children: mapOptions(widget.form.questionList[i].optionList, widget.form.questionList[i].index),
               )
             ],
           ),
@@ -83,7 +88,7 @@ class _BuildFormState extends State<BuildForm> {
       optionWidgetList.add(
         RadioListTile(
           value: optionModel.index,
-          groupValue: selectedOption[index],
+          groupValue: _selectedOption[index],
           title: Text((optionModel.index + 1).toString() + ". " + optionModel.option),
           onChanged: (val) {
             print("Current User $val");
@@ -98,7 +103,7 @@ class _BuildFormState extends State<BuildForm> {
 
   void setSelectedOption(int val, int index) {
     setState(() {
-      selectedOption[index] = val;
+      _selectedOption[index] = val;
     });
   }
 }

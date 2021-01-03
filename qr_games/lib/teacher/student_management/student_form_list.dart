@@ -12,7 +12,7 @@ class StudentFormList extends StatefulWidget{
 }
 
 class _StudentFormList extends State<StudentFormList> {
-  List<String> forms = [];
+  List<String> _forms = [];
 
   @override
   void initState() {
@@ -20,9 +20,9 @@ class _StudentFormList extends State<StudentFormList> {
       value.forEach((student) {
         print("asasd " + student);
         setState(() {
-          forms = value;
+          _forms = value;
         });
-        print(forms.length);
+        print(_forms.length);
       })
     });
     super.initState();
@@ -35,18 +35,18 @@ class _StudentFormList extends State<StudentFormList> {
           leading: IconButton(icon: Icon(Icons.arrow_back), onPressed: (){
             Navigator.pop(context);
           },),
-          title: Text('${widget.student}\'s list'),
+          title: Text('${widget.student}'),
         ),
         body: ListView.builder(
-          itemCount: forms.length,
+          itemCount: _forms.length,
           itemBuilder: (BuildContext context, int index){
             print("iterating on index: $index");
             return ListTile(
               leading: Icon(Icons.insert_drive_file),
-              title: Text(forms[index]),
+              title: Text(_forms[index]),
               onTap: (){
-                print("building form with student: ${widget.student}, and form: ${forms[index]}");
-                Navigator.push(context, MaterialPageRoute(builder: (context) => BuildStudentForm(widget.student, forms[index])));
+                print("building form with student: ${widget.student}, and form: ${_forms[index]}");
+                Navigator.push(context, MaterialPageRoute(builder: (context) => BuildStudentForm(widget.student, _forms[index])));
               },
             );
           },

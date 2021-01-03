@@ -1,14 +1,16 @@
 import 'dart:typed_data';
+import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:nearby_connections/nearby_connections.dart';
 import 'package:qr_games/model/endpoint_data.dart';
-
-import 'file:///C:/Users/angel/Desktop/4t/TFG/QRGames/Projecte/qr_games/lib/common/shared_preferences.dart';
+import 'package:qr_games/common/shared_preferences.dart';
+import 'package:qr_games/teacher/edit_form.dart';
+import 'package:qr_games/model/form.dart';
 
 class SavedForms extends StatefulWidget {
-  List<EndpointData> endpointList;
+  final List<EndpointData> endpointList;
   SavedForms(this.endpointList);
 
   @override
@@ -17,6 +19,8 @@ class SavedForms extends StatefulWidget {
 
 class _SavedForms extends State<SavedForms>{
   List<Card> myForms = [];
+  static const DELETE = 0;
+  static const SHARE = 2;
 
   @override
   void initState(){
@@ -59,7 +63,6 @@ class _SavedForms extends State<SavedForms>{
         }
 
         Key key = Key(e);
-        print("displaying ${e.toString()}");
         setState(() {
           myForms.add(
             Card(
@@ -83,7 +86,7 @@ class _SavedForms extends State<SavedForms>{
                   IconButton(
                     icon: Icon(Icons.share),
                     onPressed: (){
-                      _shareButtonPressed("#$e");
+                      _showAlertDialog(SHARE, e);
                     },
                   ),
                   IconButton(
@@ -92,7 +95,7 @@ class _SavedForms extends State<SavedForms>{
                       color: Colors.red.shade400,
                     ),
                     onPressed: (){
-                      _deleteButtonPressed("$e");
+                      _showAlertDialog(DELETE, e);
                     },
                   )
                 ],
@@ -104,14 +107,15 @@ class _SavedForms extends State<SavedForms>{
     });
   }
 
-  _editButtonPressed(String formName) {
-    print("edit");
-    //TODO: Edit existing forms
+  _editButtonPressed(String formName) async {
+    String str = await MySharedPreferences.getData(formName);
+    Map<String, dynamic> decodedForm = jsonDecode(str);
+    FormModel form = FormModel.fromJson(decodedForm);
+
+    Navigator.push(context, MaterialPageRoute(builder: (context) => EditForm(form)));
   }
 
   _shareButtonPressed(String formName){
-    print("[SHARED_BUTTON_PRESSED] Sending $formName");
-
     MySharedPreferences.getData(formName).then((result) {
       String form;
       setState(() {
@@ -119,7 +123,6 @@ class _SavedForms extends State<SavedForms>{
           form = result.toString(); //use toString to convert as String
         }
       });
-      print("[SHARED_BUTTON_PRESSED] Sending this form: $form");
       for (var endpoint in widget.endpointList){
         Nearby().sendBytesPayload(endpoint.id, Uint8List.fromList(form.codeUnits));
       }
@@ -127,9 +130,73 @@ class _SavedForms extends State<SavedForms>{
   }
 
   _deleteButtonPressed(String formName) {
-    MySharedPreferences.deleteData(formName);
+    MySharedPreferences.deleteData("#" + formName);
     Key key = Key(formName);
     myForms.removeWhere((card) => card.key == key);
     setState(() {});
+  }
+
+  _showAlertDialog(int type, String formName) {
+    // set up the buttons
+    Widget cancelButton = FlatButton(
+      child: Text("Cancel"),
+      onPressed:  () {
+        Navigator.of(context).pop();
+      },
+    );
+
+    switch (type){
+      case SHARE:
+        Widget continueButton = FlatButton(
+          child: Text("Share"),
+          onPressed:  () {
+            _shareButtonPressed("#$formName");
+            Navigator.of(context).pop();
+          },
+        );
+        // set up the AlertDialog
+        AlertDialog alert = AlertDialog(
+          title: Text("Share document"),
+          content: Text("You are about to share this document: $formName.\n\nAre you sure?"),
+          actions: [
+            cancelButton,
+            continueButton,
+          ],
+        );
+        // show the dialog
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return alert;
+          },
+        );
+        break;
+      case DELETE:
+        Widget continueButton = FlatButton(
+          child: Text("Delete", style: TextStyle(color: Colors.red),),
+          onPressed:  () {
+            _deleteButtonPressed("$formName");
+            Navigator.of(context).pop();
+          },
+        );
+        // set up the AlertDialog
+        AlertDialog alert = AlertDialog(
+          title: Text("Warning!"),
+          content: Text("You are about to delete this form: $formName.\n\nAre you sure?"),
+          actions: [
+            cancelButton,
+            continueButton,
+          ],
+        );
+        // show the dialog
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return alert;
+          },
+        );
+        break;
+    }
+
   }
 }

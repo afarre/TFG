@@ -3,7 +3,6 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:nearby_connections/nearby_connections.dart';
-import 'package:qr_games/model/connections_data.dart';
 import 'package:qr_games/model/endpoint_data.dart';
 import 'package:qr_games/model/form.dart';
 import 'package:qr_games/common/shared_preferences.dart';
@@ -11,19 +10,18 @@ import 'package:qr_games/common/file_manager.dart';
 
 
 class EndpointList extends StatefulWidget{
-  List<EndpointData> _endpointList;
-  EndpointList(this._endpointList);
+  final List<EndpointData> endpointList;
+  EndpointList(this.endpointList);
 
-  createState() => EndpointListPublic(_endpointList);
+  @override
+  State<StatefulWidget> createState() => _EndpointList();
 }
 
-class EndpointListPublic extends State<EndpointList> with WidgetsBindingObserver{
-  final Strategy strategy = Strategy.P2P_STAR;
+class _EndpointList extends State<EndpointList> with WidgetsBindingObserver{
+  static const Strategy strategy = Strategy.P2P_STAR;
   File tempFile; //reference to the file currently being transferred
   Map<int, String> map = Map();
-  List<EndpointData> endpointList = <EndpointData>[];
 
-  EndpointListPublic(this.endpointList);
 
   @override
   void initState(){
@@ -38,28 +36,29 @@ class EndpointListPublic extends State<EndpointList> with WidgetsBindingObserver
   }
 
   //primer pop up
-  void advertiseDevice() async{
+  void _advertiseDevice() async{
     String name = await MySharedPreferences.getUserName();
     try {
-      bool a = await Nearby().startAdvertising(
+      await Nearby().startAdvertising(
         name,
         strategy,
-        onConnectionInitiated: onConnectionInit,
+        onConnectionInitiated: _onConnectionInit,
         onConnectionResult: (id, status) {
-          showSnackbar("Connected students: ${endpointList.length + 1}");
+          showSnackbar("Connected students: ${widget.endpointList.length + 1}");
 //          return new ConnectionData(id, status);
         },
         onDisconnected: (id) {
+          print("lost connection to device: $id");
           MySharedPreferences.getEndpoint(id).then((value) => {
           showSnackbar("Disconnected: " + value.name),
             setState(() {
-              endpointList.removeWhere((element) => element.uuid == value.uuid);
+              widget.endpointList.removeWhere((element) => element.uuid == value.uuid);
             })
           });
 //          return new ConnectionData(id, null);
         },
       );
-      showSnackbar("ADVERTISING: " + a.toString());
+      showSnackbar("Device currently advertising!");
     } catch (exception) {
       showSnackbar(exception);
     }
@@ -74,7 +73,7 @@ class EndpointListPublic extends State<EndpointList> with WidgetsBindingObserver
 
   /// Called upon Connection request (on both devices)
   /// Both need to accept connection to start sending/receiving
-  void onConnectionInit(String id, ConnectionInfo info) {
+  void _onConnectionInit(String id, ConnectionInfo info) {
     showModalBottomSheet(
       context: context,
       builder: (builder) {
@@ -98,7 +97,7 @@ class EndpointListPublic extends State<EndpointList> with WidgetsBindingObserver
                         print("received payload from id: $endid: $str");
 
                         if(str.startsWith("UUID")){
-                          handleInitialConnection(str, info, id);
+                          _handleInitialConnection(str, info, id);
 
                         }else{
                           Map<String, dynamic> decodedForm = jsonDecode(str);
@@ -127,7 +126,6 @@ class EndpointListPublic extends State<EndpointList> with WidgetsBindingObserver
                         print("failed");
                         showSnackbar(endid + ": FAILED to transfer file");
                       } else if (payloadTransferUpdate.status == PayloadStatus.SUCCESS) {
-                        showSnackbar("success, total bytes = ${payloadTransferUpdate.totalBytes}");
 
                         if (map.containsKey(payloadTransferUpdate.id)) {
                           //rename the file now
@@ -162,23 +160,23 @@ class EndpointListPublic extends State<EndpointList> with WidgetsBindingObserver
 
   @override
   Widget build(BuildContext context) {
-    print("printing list contents in view build: ${endpointList.toString()}");
+    print("printing list contents in view build: ${widget.endpointList.toString()}");
     return WillPopScope(
       onWillPop: () async {
-        Navigator.pop(context, endpointList);
+        Navigator.pop(context, widget.endpointList);
         return false;
       },
       child: Scaffold(
         appBar: AppBar(
           leading: IconButton(icon: Icon(Icons.arrow_back), onPressed: (){
-            Navigator.pop(context, endpointList);
+            Navigator.pop(context, widget.endpointList);
           },),
           title: Text('Connected devices'),
         ),
         body: ListView.builder(
-          itemCount: endpointList.length,
+          itemCount: widget.endpointList.length,
           itemBuilder: (context, index){
-            return fillSingleCellCool(endpointList[index]);
+            return _fillSingleCellCool(widget.endpointList[index]);
 /*
             final endpoint = endpointList[index];
             return ListTile(
@@ -196,139 +194,99 @@ class EndpointListPublic extends State<EndpointList> with WidgetsBindingObserver
     );
   }
 
-  onTapped(int index, BuildContext context) {
-    showDialog(context: context,
-      builder: (BuildContext context){
-        return AlertDialog(
-          title: new Text("Escolleix que vols fer"),
-          actions: <Widget>[
-            new FlatButton(
-              child: new Text("Marca/Desmarca tasca"),
-              onPressed: () {
-                //taskComplete.fillRange(index, index + 1, !taskComplete.elementAt(index));
-                setState(() {
 
-                });
-                Navigator.of(context).pop();
-              },
-            ),
-            new FlatButton(
-              child: new Text("Esborra tasca"),
-              onPressed: () {
-                //taskList.removeAt(index);
-                //taskComplete.removeAt(index);
-                //numElements--;
-                setState(() {
-
-                });
-                Navigator.of(context).pop();
-              },
-            ),
-            new FlatButton(
-              child: new Text("Cancel·la"),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  fillSingleCellCool(EndpointData event) {
+  Widget _fillSingleCellCool(EndpointData event) {
     return Container(
-        height: 250,
-        width: MediaQuery.of(context).size.width,
-        child: Stack(
-          fit: StackFit.loose,
-          children: <Widget>[
-            Positioned (
-              top: 0,
-              right: 0,
-              child: Container(
-                width: 70,
-                height: 70,
-                decoration: BoxDecoration(
-                  gradient: RadialGradient(
-                      radius: 1,
-                      center: Alignment(1, -1),
-                      colors: [
-                        Colors.black.withOpacity(0.6),
-                        Colors.transparent
-                      ]
-                  ), //linear gradient
-                ),
+      height: 250,
+      width: MediaQuery.of(context).size.width,
+      child: Stack(
+        fit: StackFit.loose,
+        children: <Widget>[
+          Positioned (
+            top: 0,
+            right: 0,
+            child: Container(
+              width: 70,
+              height: 70,
+              decoration: BoxDecoration(
+                gradient: RadialGradient(
+                    radius: 1,
+                    center: Alignment(1, -1),
+                    colors: [
+                      Colors.black.withOpacity(0.6),
+                      Colors.transparent
+                    ]
+                ), //linear gradient
               ),
             ),
+          ),
+          Positioned(
+            bottom: 0,
 
-            Positioned(
-              bottom: 0,
+            child: GestureDetector(
+              child:Container(
+                width: MediaQuery.of(context).size.width,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.transparent,
+                        Colors.black
+                      ]
+                  ), //linear gradient
+                ), //decoration
+                child: Padding(
+                  padding: EdgeInsets.all(20.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                    Padding(
+                      padding: EdgeInsets.fromLTRB(0, 20.0, 0, 10.0),
+                      child: Text(
+                        _insertText(event.name),
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                            fontSize: 20
+                        ) //text style
+                      ) //text
+                    ), //text padding
 
-              child: GestureDetector(
-                  child:Container(
-                      width: MediaQuery.of(context).size.width,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [
-                              Colors.transparent,
-                              Colors.black
-                            ]
-                        ), //linear gradient
-                      ), //decoration
-                      child: Padding(
-                          padding: EdgeInsets.all(20.0),
-                          child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: <Widget>[
-                                Padding(
-                                    padding: EdgeInsets.fromLTRB(0, 20.0, 0, 10.0),
-                                    child: Text(
-                                        insertText(event.name),
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.white,
-                                            fontSize: 20
-                                        ) //text style
-                                    ) //text
-                                ), //text padding
-
-                                Row(
-                                  children: <Widget>[
-                                    Text(
-                                        insertText(event.id),
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.white
-                                        ) //text style
-                                    ),
-                                    Text(
-                                        insertText(event.token),
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.white
-                                        ) //text style
-                                    )
-                                  ],
-                                )
-                                //text
-                              ] //column children
-                          ) //column
-                      ) //column padding
-                  )
-              ), //container
-            ), //info positioned
-          ], //stack children
-        ) //big stack
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Text(
+                          _insertText("Id: ${event.id}"),
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white
+                          ) //text style
+                        ),
+                        Text(
+                          _insertText("Token: ${event.token}"),
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white
+                          ) //text style
+                        )
+                      ],
+                    )
+                  ] //column children
+                ) //column
+              ) //column padding
+            )
+          ), //container
+         ), //info positioned
+        ], //stack children
+      ) //big stack
     ); //container
   }
 
-  insertText(String text) {
+  _insertText(String text) {
     if (text != null) {
       return text;
     } else {
@@ -342,11 +300,12 @@ class EndpointListPublic extends State<EndpointList> with WidgetsBindingObserver
       print("stopped advertising");
       Nearby().stopAdvertising();
     }else if (state == AppLifecycleState.resumed){
-      advertiseDevice();
+      print("advertising because state resumed");
+      _advertiseDevice();
     }
   }
 
-  void handleInitialConnection(String str, ConnectionInfo info, String id) {
+  void _handleInitialConnection(String str, ConnectionInfo info, String id) {
     print("in handle with str: $str and id: $id");
     String uuid = str.replaceFirst("UUID", "");
     MySharedPreferences.contains(uuid).then((isRegistered){
@@ -354,12 +313,12 @@ class EndpointListPublic extends State<EndpointList> with WidgetsBindingObserver
         print("old device");
         MySharedPreferences.getData(uuid).then((oldEndpointData){
           EndpointData endpointData = updateEndpointData(oldEndpointData, info, id, uuid);
-          if(endpointList.isEmpty){
+          if(widget.endpointList.isEmpty){
             setState(() {
-              endpointList.add(endpointData);
+              widget.endpointList.add(endpointData);
             });
           }else{
-            endpointList.forEach((element) {
+            widget.endpointList.forEach((element) {
               if(element.uuid == uuid){
                 print("was already in view (duplicate)");
                 setState(() {
@@ -371,7 +330,7 @@ class EndpointListPublic extends State<EndpointList> with WidgetsBindingObserver
               }else{
                 print("was not displayed in view");
                 setState(() {
-                  endpointList.add(endpointData);
+                  widget.endpointList.add(endpointData);
                 });
               }
             });
@@ -383,7 +342,7 @@ class EndpointListPublic extends State<EndpointList> with WidgetsBindingObserver
         String endpointJson = jsonEncode(endpointData);
         MySharedPreferences.setData(endpointJson, uuid);
         setState(() {
-          endpointList.add(endpointData);
+          widget.endpointList.add(endpointData);
         });
         FileManager.createDir(info.endpointName);
       }

@@ -3,14 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:nearby_connections/nearby_connections.dart';
 import 'package:qr_games/common/file_manager.dart';
 import 'package:qr_games/model/endpoint_data.dart';
-import 'package:qr_games/teacher/create_forms.dart';
+import 'package:qr_games/teacher/create_form.dart';
 import 'package:qr_games/teacher/endpoint_list.dart';
 import 'package:qr_games/teacher/my_forms.dart';
 import 'package:qr_games/teacher/student_management/student_answer_list.dart';
 import 'package:qr_games/common/shared_preferences.dart';
 
 class TeacherView extends StatelessWidget {
-  final CreateForms createForms = CreateForms();
 
   @override
   Widget build(BuildContext context){
@@ -26,7 +25,7 @@ class TeacherView extends StatelessWidget {
         RaisedButton(
           child: const Text('Create forms', style: TextStyle(fontSize: 20)),
           onPressed: () {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => createForms));
+            Navigator.push(context, MaterialPageRoute(builder: (context) => CreateForms()));
           },
         ),
         RaisedButton(
@@ -49,7 +48,7 @@ class TeacherView extends StatelessWidget {
           child: const Text('Stop all endpoints', style: TextStyle(fontSize: 20)),
           onPressed: () {
             Nearby().stopAllEndpoints();
-            endpointList = <EndpointData>[];
+            endpointList.clear();
           },
         ),
         RaisedButton(
@@ -71,9 +70,8 @@ class TeacherView extends StatelessWidget {
 
              */
 
-            await FileManager.deleteDir("testDir");
 
-            await FileManager.listDirContents(FileManager.DISPLAY_DIRECTORIES);
+            await FileManager.listDirContents(FileManager.DISPLAY_ALL);
             //Navigator.push(context, MaterialPageRoute(builder: (context) => test()));
 
           },

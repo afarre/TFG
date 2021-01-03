@@ -41,7 +41,7 @@ class MySharedPreferences {
   }
 
   ///Saved the specified [name] under the 'userName' key
-  static saveUserName(String name) async{
+  static setUserName(String name) async{
     final prefs = await SharedPreferences.getInstance();
     final key = 'userName';
     final value = name;
