@@ -20,7 +20,7 @@ class SavedForms extends StatefulWidget {
 class _SavedForms extends State<SavedForms>{
   List<Card> myForms = [];
   static const DELETE = 0;
-  static const SHARE = 2;
+  static const SHARE = 1;
 
   @override
   void initState(){

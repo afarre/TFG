@@ -45,7 +45,6 @@ class _EndpointList extends State<EndpointList> with WidgetsBindingObserver{
         onConnectionInitiated: _onConnectionInit,
         onConnectionResult: (id, status) {
           showSnackbar("Connected students: ${widget.endpointList.length + 1}");
-//          return new ConnectionData(id, status);
         },
         onDisconnected: (id) {
           print("lost connection to device: $id");
@@ -55,7 +54,6 @@ class _EndpointList extends State<EndpointList> with WidgetsBindingObserver{
               widget.endpointList.removeWhere((element) => element.uuid == value.uuid);
             })
           });
-//          return new ConnectionData(id, null);
         },
       );
       showSnackbar("Device currently advertising!");

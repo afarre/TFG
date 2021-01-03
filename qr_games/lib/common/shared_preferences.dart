@@ -9,7 +9,6 @@ class MySharedPreferences {
   static Future<Set<String>> getKeys() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     final value = prefs.getKeys();
-    print("got ${value.length} results");
     return value;
   }
 
