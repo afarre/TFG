@@ -7,7 +7,7 @@ import 'package:qr_games/teacher/create_form.dart';
 import 'package:qr_games/teacher/endpoint_list.dart';
 import 'package:qr_games/teacher/my_forms.dart';
 import 'package:qr_games/teacher/student_management/student_answer_list.dart';
-import 'package:qr_games/common/shared_preferences.dart';
+import 'package:qr_games/model/advertiser_data.dart';
 
 class TeacherView extends StatelessWidget {
 

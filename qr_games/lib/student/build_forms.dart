@@ -88,10 +88,10 @@ class _BuildFormState extends State<BuildForm> {
       optionWidgetList.add(
         RadioListTile(
           value: optionModel.index,
+          toggleable: true,
           groupValue: _selectedOption[index],
           title: Text((optionModel.index + 1).toString() + ". " + optionModel.option),
           onChanged: (val) {
-            print("Current User $val");
             setSelectedOption(val, index);
           },
           activeColor: Colors.green,
@@ -103,7 +103,11 @@ class _BuildFormState extends State<BuildForm> {
 
   void setSelectedOption(int val, int index) {
     setState(() {
-      _selectedOption[index] = val;
+      if(_selectedOption[index] == val){
+        _selectedOption[index] = -1;
+      }else{
+        _selectedOption[index] = val;
+      }
     });
   }
 }

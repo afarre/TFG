@@ -102,7 +102,7 @@ class _SettingsView extends State<SettingsView>{
                           enabledBorder: OutlineInputBorder(
                             borderSide: BorderSide(color: Colors.grey, width: 1.0),
                           ),
-                          hintText: 'Your name',
+                          //hintText: 'Your name',
                         ),
                         onTap: (){
                           _displayFuture = false;

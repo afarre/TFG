@@ -35,7 +35,6 @@ class _EndpointList extends State<EndpointList> with WidgetsBindingObserver{
     super.dispose();
   }
 
-  //primer pop up
   void _advertiseDevice() async{
     String name = await MySharedPreferences.getUserName();
     try {
@@ -44,7 +43,10 @@ class _EndpointList extends State<EndpointList> with WidgetsBindingObserver{
         strategy,
         onConnectionInitiated: _onConnectionInit,
         onConnectionResult: (id, status) {
-          showSnackbar("Connected students: ${widget.endpointList.length + 1}");
+          print(status);
+          if(status != Status.REJECTED){
+            showSnackbar("Connected students: ${widget.endpointList.length + 1}");
+          }
         },
         onDisconnected: (id) {
           print("lost connection to device: $id");
@@ -58,7 +60,8 @@ class _EndpointList extends State<EndpointList> with WidgetsBindingObserver{
       );
       showSnackbar("Device currently advertising!");
     } catch (exception) {
-      showSnackbar(exception);
+      //already advertising
+      showSnackbar("startAdvertising catch: ${exception.toString()}");
     }
     return null;
   }
@@ -77,7 +80,7 @@ class _EndpointList extends State<EndpointList> with WidgetsBindingObserver{
       builder: (builder) {
         return Center(
           child: Column(
-            //segon pop up
+            //primer pop up
             children: <Widget>[
               Text("id: " + id),
               Text("Token: " + info.authenticationToken),
@@ -89,10 +92,10 @@ class _EndpointList extends State<EndpointList> with WidgetsBindingObserver{
                   Navigator.pop(context);
                   Nearby().acceptConnection(
                     id,
-                    onPayLoadRecieved: (endid, payload) async {
+                    onPayLoadRecieved: (endId, payload) async {
                       String str = String.fromCharCodes(payload.bytes);
                       if (payload.type == PayloadType.BYTES) {
-                        print("received payload from id: $endid: $str");
+                        print("received payload from id: $endId: $str");
 
                         if(str.startsWith("UUID")){
                           _handleInitialConnection(str, info, id);
@@ -100,8 +103,8 @@ class _EndpointList extends State<EndpointList> with WidgetsBindingObserver{
                         }else{
                           Map<String, dynamic> decodedForm = jsonDecode(str);
                           FormModel form = FormModel.fromJson(decodedForm);
-                          print("student (id: $endid) answered with this form: $decodedForm");
-                          MySharedPreferences.getEndpoint(endid).then((endpoint) {
+                          print("student (id: $endId) answered with this form: $decodedForm");
+                          MySharedPreferences.getEndpoint(endId).then((endpoint) {
                             print("ended up with this name: ${endpoint.name}");
                             //FileManager.listDirContents();
                             FileManager.createFile(endpoint.name, form.title).then((file) => {
@@ -113,7 +116,7 @@ class _EndpointList extends State<EndpointList> with WidgetsBindingObserver{
                         }
 
                       } else if (payload.type == PayloadType.FILE) {
-                        showSnackbar(endid + ": File transfer started");
+                        showSnackbar(endId + ": File transfer started");
                         tempFile = File(payload.filePath);
                       }
                     },
@@ -145,7 +148,8 @@ class _EndpointList extends State<EndpointList> with WidgetsBindingObserver{
                   try {
                     await Nearby().rejectConnection(id);
                   } catch (e) {
-                    showSnackbar(e);
+                    //status error endpoint unknown
+                    print("rejectConnection catch: ${e.toString()}");
                   }
                 },
               ),

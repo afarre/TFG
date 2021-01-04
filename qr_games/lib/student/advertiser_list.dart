@@ -21,13 +21,12 @@ class AdvertiserList extends StatefulWidget{
 }
 
 class _AdvertiserList extends State<AdvertiserList> with WidgetsBindingObserver{
-  static const Strategy strategy = Strategy.P2P_STAR;
+  static const Strategy _strategy = Strategy.P2P_STAR;
   Map<int, String> _map = Map();
-  String _name;
   File _tempFile; //reference to the file currently being transferred
   FormModel _form;
   String _teacherId;
-
+  String _name;
 
   @override
   void initState(){
@@ -48,43 +47,45 @@ class _AdvertiserList extends State<AdvertiserList> with WidgetsBindingObserver{
     _name = name;
     try {
       await Nearby().startDiscovery(name,
-        strategy,
+        _strategy,
         onEndpointFound: (endpointId, endpointName, endpointServiceId) {
-          print("advertiser found");
           AdvertiserData advertiserData = AdvertiserData(endpointName, endpointId, endpointServiceId);
           //WidgetsBinding.instance.addPostFrameCallback((_){
-            print("done?");
             setState(() {
-              widget.advertiserList.add(advertiserData);
+              bool inList = false;
+              for(AdvertiserData advertiserData in widget.advertiserList){
+                if(advertiserData.id == endpointId){
+                  inList = true;
+                  break;
+                }
+              }
+              if(!inList){
+                widget.advertiserList.add(advertiserData);
+              }
             });
-
           //});
-
-          /*setState(() {
-          widget.advertiserList.add(advertiserData);
-        });*/
         },
         onEndpointLost: (endpointId) {
           //showSnackbar("Lost Endpoint:" + endpointId);
           print("lost endpoint");
         },
       );
-      showSnackbar("Device currently discovering!");
+      _showSnackbar("Device currently discovering!");
     } catch (exception) {
-      showSnackbar(exception);
+      //status: already discovering
+      print("startDiscovery catch: ${exception.toString()}");
     }
-    return null;
   }
 
-  void showSnackbar(dynamic a) {
+  void _showSnackbar(dynamic msg) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(a.toString()),
+      content: Text(msg.toString()),
     ));
   }
 
   /// Called upon Connection request (on both devices)
   /// Both need to accept connection to start sending/receiving
-  void onConnectionInit(String id, ConnectionInfo info) {
+  void _onConnectionInit(String id, ConnectionInfo info) {
     showModalBottomSheet(
       context: context,
       builder: (builder) {
@@ -102,7 +103,8 @@ class _AdvertiserList extends State<AdvertiserList> with WidgetsBindingObserver{
                   Navigator.pop(context);
                   //set state
                   Nearby().acceptConnection(
-                    id, onPayLoadRecieved: (endid, payload) async {
+                    id,
+                    onPayLoadRecieved: (endid, payload) async {
                     if (payload.type == PayloadType.BYTES) {
                       print("got payload BYTES");
                       String str = String.fromCharCodes(payload.bytes);
@@ -113,10 +115,10 @@ class _AdvertiserList extends State<AdvertiserList> with WidgetsBindingObserver{
                       _form = FormModel.fromJson(decodedForm);
                       print("form title: " + _form.title);
 
-                      promptForForm(_form);
+                      _promptForForm(_form);
                     } else if (payload.type == PayloadType.FILE) {
                       print("got payload FILES");
-                      showSnackbar(endid + ": File transfer started");
+                      _showSnackbar(endid + ": File transfer started");
                       _tempFile = File(payload.filePath);
                     }
                   },
@@ -125,7 +127,7 @@ class _AdvertiserList extends State<AdvertiserList> with WidgetsBindingObserver{
                         print(payloadTransferUpdate.bytesTransferred);
                       } else if (payloadTransferUpdate.status == PayloadStatus.FAILURE) {
                         print("failed");
-                        showSnackbar(endid + ": FAILED to transfer file");
+                        _showSnackbar(endid + ": FAILED to transfer file");
                       } else if (payloadTransferUpdate.status == PayloadStatus.SUCCESS) {
 
                         if (_map.containsKey(payloadTransferUpdate.id)) {
@@ -148,8 +150,7 @@ class _AdvertiserList extends State<AdvertiserList> with WidgetsBindingObserver{
                   try {
                     await Nearby().rejectConnection(id);
                   } catch (e) {
-                    print("another catch $e");
-                    //showSnackbar("another catch $e");
+                    print("rejectConnection catch: ${e.toString()}");
                   }
                 },
               ),
@@ -185,71 +186,70 @@ class _AdvertiserList extends State<AdvertiserList> with WidgetsBindingObserver{
     );
   }
 
-  _connectToDiscoverer(AdvertiserData data) {
+  _connectToAdvertiser(AdvertiserData data) {
     Nearby().stopDiscovery();
     _teacherId = data.id;
-   // WidgetsBinding.instance.addPostFrameCallback((_){
-      print("widgets done?");
-      // show sheet automatically to request connection
-      showModalBottomSheet(
-        context: context,
-        builder: (builder) {
-          return Center(
-            child: Column(
-              children: <Widget>[
-                Icon(Icons.drag_handle, size: 35),
-                SizedBox(
-                  height: 5,
-                ),
-                Text("Device found", style: TextStyle(fontSize: 20.0)),
-                const Divider(
-                  color: Colors.black,
-                  height: 20,
-                  thickness: 1,
-                  indent: 15,
-                  endIndent: 15,
-                ),
-                Text("Name: " + data.name),
-                Text("Id: " + data.id),
-                Text("ServiceId: " + data.serviceId),
-                const Divider(
-                  color: Colors.black,
-                  height: 20,
-                  thickness: 1,
-                  indent: 15,
-                  endIndent: 15,
-                ),
-                RaisedButton(
-                  child: Text("Request Connection", style: TextStyle(fontSize: 20.0)),
-                  onPressed: () {
-                    Navigator.pop(context);
-                    Nearby().requestConnection(
-                      _name,
-                      data.id,
-                      onConnectionInitiated: (id, info) {
-                        onConnectionInit(id, info);
-                      },
-                      onConnectionResult: (id, status) {
-                        SettingsView.getDeviceDetails().then((value){
-                          print("sending UUID to teacher: ${value[2]}");
-                          Nearby().sendBytesPayload(id, Uint8List.fromList(("UUID" + value[2]).codeUnits));
-                        });
-                        print("status: $status");
-                        //showSnackbar("status: $status");
-                      },
-                      onDisconnected: (id) {
-                        showSnackbar("Disconnected $id");
-                        //TODO: indicar al usuari que s'ha desconectat de forma visual
-                      },
-                    );
-                  },
-                ),
-              ],
-            ),
-          );
-        },
-      );
-   // });
+    print("widgets done?");
+    // show sheet automatically to request connection
+    showModalBottomSheet(
+      context: context,
+      builder: (builder) {
+        return Center(
+          child: Column(
+            children: <Widget>[
+              Icon(Icons.drag_handle, size: 35),
+              SizedBox(
+                height: 5,
+              ),
+              Text("Device found", style: TextStyle(fontSize: 20.0)),
+              const Divider(
+                color: Colors.black,
+                height: 20,
+                thickness: 1,
+                indent: 15,
+                endIndent: 15,
+              ),
+              Text("Name: " + data.name),
+              Text("Id: " + data.id),
+              Text("ServiceId: " + data.serviceId),
+              const Divider(
+                color: Colors.black,
+                height: 20,
+                thickness: 1,
+                indent: 15,
+                endIndent: 15,
+              ),
+              RaisedButton(
+                child: Text("Request Connection", style: TextStyle(fontSize: 20.0)),
+                onPressed: () {
+                  Navigator.pop(context);
+                  Nearby().requestConnection(
+                    _name,
+                    data.id,
+                    onConnectionInitiated: (id, info) {
+                      _onConnectionInit(id, info);
+                    },
+                    onConnectionResult: (id, status) {
+                      //TODO: enviar UUID nomes si status es OK. revisar
+                      SettingsView.getDeviceDetails().then((value){
+                        print("sending UUID to teacher: ${value[2]}");
+                        Nearby().sendBytesPayload(id, Uint8List.fromList(("UUID" + value[2]).codeUnits));
+                      });
+                      print("status: $status");
+                      //showSnackbar("status: $status");
+                    },
+                    onDisconnected: (id) {
+                      _showSnackbar("Disconnected $id");
+                      //TODO: indicar al usuari que s'ha desconectat de forma visual
+                    },
+                  );
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   Widget _fillSingleCellCool(AdvertiserData data) {
@@ -280,7 +280,7 @@ class _AdvertiserList extends State<AdvertiserList> with WidgetsBindingObserver{
           Positioned(
             bottom: 0,
             child: GestureDetector(
-              onTap: () => _connectToDiscoverer(data),
+              onTap: () => _connectToAdvertiser(data),
               child: Container(
                 width: MediaQuery.of(context).size.width,
                 decoration: BoxDecoration(
@@ -361,7 +361,7 @@ class _AdvertiserList extends State<AdvertiserList> with WidgetsBindingObserver{
     }
   }
 
-  void promptForForm(FormModel form) {
+  void _promptForForm(FormModel form) {
     showModalBottomSheet(
         context: context,
         builder: (builder) {

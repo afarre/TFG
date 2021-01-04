@@ -3,14 +3,7 @@ import 'package:nearby_connections/nearby_connections.dart';
 import 'package:qr_games/model/advertiser_data.dart';
 import 'package:qr_games/student/advertiser_list.dart';
 
-class StudentView extends StatefulWidget{
-  @override
-  State<StatefulWidget> createState() => _StudentView();
-}
-
-class _StudentView extends State<StudentView>{
-  String _currentId = "0"; //currently connected device ID
-
+class StudentView extends StatelessWidget{
   @override
   Widget build(BuildContext context) {
     List<AdvertiserData> advertisingList = <AdvertiserData>[];
@@ -25,12 +18,6 @@ class _StudentView extends State<StudentView>{
           child: const Text('See received forms', style: TextStyle(fontSize: 20)),
           onPressed: () {
 
-          },
-        ),
-        RaisedButton(
-          child: const Text('Disconnect from teacher', style: TextStyle(fontSize: 20)),
-          onPressed: () {
-            Nearby().disconnectFromEndpoint(_currentId);
           },
         ),
         RaisedButton(

@@ -55,7 +55,7 @@ class FileManager{
       }
       return results;
     } catch (e) {
-      print(e.toString());
+        print(e.toString());
       return null;
     }
   }
@@ -72,10 +72,8 @@ class FileManager{
   static Future<String> getFileContent(String user, String formName) async {
     final directory = await getApplicationDocumentsDirectory();
     final path = directory.path + "/students/$user/$formName";
-    print("path: $path");
 
     String value = await File(path).readAsString();
-    print("contents: $value");
     return value;
 
   }
@@ -98,7 +96,7 @@ class FileManager{
       }
       return results;
     } catch (e) {
-      print(e.toString());
+        print(e.toString());
       return null;
     }
   }
