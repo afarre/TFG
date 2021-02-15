@@ -14,12 +14,13 @@ class StudentView extends StatelessWidget{
       mainAxisSpacing: 15.0,
       crossAxisSpacing: 30.0,
       children: <Widget>[
+        /*
         RaisedButton(
           child: const Text('See received forms', style: TextStyle(fontSize: 20)),
           onPressed: () {
 
           },
-        ),
+        ),*/
         RaisedButton(
             child: const Text('Discover devices', style: TextStyle(fontSize: 20)),
           onPressed: () async {

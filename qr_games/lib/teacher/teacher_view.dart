@@ -57,7 +57,7 @@ class TeacherView extends StatelessWidget {
             Navigator.push(context, MaterialPageRoute(builder: (context) => StudentAnswerList()));
           },
         ),
-
+/*
         RaisedButton(
           child: const Text('testing'),
           onPressed: () async {
@@ -76,6 +76,8 @@ class TeacherView extends StatelessWidget {
 
           },
         ),
+
+ */
       ],
     );
   }

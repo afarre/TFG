@@ -33,7 +33,9 @@ class _CreateForms extends State<CreateForms>{
 
   void _removeQuestion(Question question) {
     //setState(() {
-    _questions.remove(question);
+    //TODO: Fix _questions.remove(question); not working properly
+    //_questions.remove(question);
+    _questions.removeLast();
     //});
   }
 
@@ -83,8 +85,9 @@ class _CreateForms extends State<CreateForms>{
               children: <Widget>[
                 new FlatButton(
                   onPressed: () => _addQuestion(),
-                  child: new Icon(Icons.ac_unit),
+                  child: new Icon(Icons.playlist_add),
                 ),
+                /*
                 new FlatButton(
                   onPressed: () {
                     print("Displaying question list items:");
@@ -104,6 +107,8 @@ class _CreateForms extends State<CreateForms>{
                   },
                   child: new Icon(Icons.widgets),
                 ),
+
+                 */
               ],
             ),
             const Divider(
@@ -243,8 +248,8 @@ class _Question extends State<Question> {
         children: <Widget>[
           Row(
             children: <Widget>[
-              Text("q" + widget.hashCode.toString()),
-              Text("_q" + this.hashCode.toString()),
+              //Text("q" + widget.hashCode.toString()),
+              //Text("_q" + this.hashCode.toString()),
               Flexible(
                 flex: 2,
                 child: new TextFormField(

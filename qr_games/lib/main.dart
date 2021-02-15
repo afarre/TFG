@@ -1,5 +1,6 @@
 
 import 'package:flutter/material.dart';
+import 'package:qr_games/common/app_icons.dart';
 import 'package:qr_games/settings/settings_view.dart';
 import 'package:qr_games/student/student_view.dart';
 import 'package:qr_games/teacher/teacher_view.dart';
@@ -38,11 +39,11 @@ class _MyAppState extends State<MyApp> {
           },
           items: [
             BottomNavigationBarItem(
-              icon: new Icon(Icons.home),
+              icon: new Icon(MyFlutterApp.teacher),
               label: 'Teacher',
             ),
             BottomNavigationBarItem(
-              icon: new Icon(Icons.mail),
+              icon: new Icon(MyFlutterApp.student),
               label: 'Student',
             ),
             BottomNavigationBarItem(
@@ -65,6 +66,7 @@ class _MyAppState extends State<MyApp> {
     if (currentIndex == 2) {
       return SettingsView();
     }
+    return null;
   }
 }
 

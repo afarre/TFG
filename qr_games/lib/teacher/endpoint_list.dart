@@ -49,12 +49,16 @@ class _EndpointList extends State<EndpointList> with WidgetsBindingObserver{
           }
         },
         onDisconnected: (id) {
-          print("lost connection to device: $id");
+          //print("lost connection to device: $id");
           MySharedPreferences.getEndpoint(id).then((value) => {
-          showSnackbar("Disconnected: " + value.name),
-            setState(() {
-              widget.endpointList.removeWhere((element) => element.uuid == value.uuid);
-            })
+            if(this.mounted){
+              setState(() {
+                widget.endpointList.removeWhere((element) => element.uuid == value.uuid);
+                //print("endpointList post disconnect: ${widget.endpointList.length}");
+              })
+            }else{
+              widget.endpointList.removeWhere((element) => element.uuid == value.uuid)
+            }
           });
         },
       );
@@ -342,6 +346,7 @@ class _EndpointList extends State<EndpointList> with WidgetsBindingObserver{
         print("new device");
         EndpointData endpointData = new EndpointData(info.endpointName, id, info.authenticationToken, info.isIncomingConnection, uuid);
         String endpointJson = jsonEncode(endpointData);
+        print(endpointJson);
         MySharedPreferences.setData(endpointJson, uuid);
         setState(() {
           widget.endpointList.add(endpointData);

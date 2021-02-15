@@ -39,11 +39,12 @@ class SettingsView extends StatefulWidget{
   }
 }
 
-class _SettingsView extends State<SettingsView>{
+class _SettingsView extends State<SettingsView> with WidgetsBindingObserver{
   bool _wiFiIsEnabled = false;
   bool _locationIsEnabled = false;
   bool _displayFuture = true;
   final _myController = TextEditingController();
+
 
   Future<String> getName() async{
     String name = await MySharedPreferences.getUserName();
@@ -51,13 +52,30 @@ class _SettingsView extends State<SettingsView>{
   }
 
   @override
-  initState() {
+  void initState() {
     WiFiForIoTPlugin.isEnabled().then((val) {
       if (val != null) {
         _wiFiIsEnabled = val;
       }
     });
+    WidgetsBinding.instance.addObserver(this);
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    if(this.mounted){
+      nameSubmitted(_myController.text);
+    }
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if(state == AppLifecycleState.detached || state == AppLifecycleState.inactive || state == AppLifecycleState.paused){
+      nameSubmitted(_myController.text);
+    }
   }
 
 
@@ -118,6 +136,8 @@ class _SettingsView extends State<SettingsView>{
           new Divider(height: 15.0,color: Colors.blueGrey),
           _getWiFi(),
           _getLocation(),
+          //_getBluetooth(),
+          //TODO: Implement bluetooth switch
         ],
       ),
     );
@@ -153,6 +173,12 @@ class _SettingsView extends State<SettingsView>{
   }
 
   _getLocation() {
+    /*Nearby().checkLocationEnabled().then((val) => setState(() {
+      _locationIsEnabled = val;
+    }));
+
+     */
+
     return ListTile(
       title: Row(
         children: [
@@ -160,17 +186,17 @@ class _SettingsView extends State<SettingsView>{
           Text("\tLocation"),
           Spacer(),
           Switch(
-              value: _locationIsEnabled,
-              onChanged: (value){
-                setState(() {
-                  _locationIsEnabled = !_locationIsEnabled;
-                  if(_locationIsEnabled){
-                    Nearby().enableLocationServices();
-                  }else{
-                    //TODO: Disable location services
-                  }
-                });
-              }
+            value: _locationIsEnabled,
+            onChanged: (value){
+              setState(() {
+                _locationIsEnabled = !_locationIsEnabled;
+                if(_locationIsEnabled){
+                  Nearby().enableLocationServices();
+                }else{
+                  //TODO: Disable location services
+                }
+              });
+            }
           )
         ],
       ),

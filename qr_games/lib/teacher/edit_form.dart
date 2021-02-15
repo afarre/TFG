@@ -37,32 +37,34 @@ class _EditFormState extends State<EditForm> {
         title: Text('Editing: "${widget._form.title}"'),
       ),
       body: SingleChildScrollView (
+        padding: EdgeInsets.all(10),
         child: Column(
           children: <Widget>[
             Column(
               children: _mapQuestions(),
             ),
-            RaisedButton(
-              child: const Text('Save changes', style: TextStyle(fontSize: 20)),
-              onPressed: () {
-                List<QuestionModel> questionModelList = new List<QuestionModel>();
-                for(var i = 0; i < widget._form.questionList.length; i++){
-                  List<OptionModel> optionModelList = new List<OptionModel>();
-                  for(var j = 0; j < widget._form.questionList[i].optionList.length; j++){
-                    OptionModel optionModel = OptionModel(optionControllerList[i + j].text, j, false);
-                    optionModelList.add(optionModel);
-                  }
-                  QuestionModel questionModel = QuestionModel(questionControllerList[i].text, optionModelList, i);
-                  questionModelList.add(questionModel);
-                }
-                FormModel form = FormModel(widget._form.title, questionModelList);
-                String json = jsonEncode(form);
-                MySharedPreferences.setData(json, '#' + form.title);
-                Navigator.pop(context);
-              }
-            )
+
           ],
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        child: Icon(Icons.save, size: 40),
+          onPressed: () {
+            List<QuestionModel> questionModelList = new List<QuestionModel>();
+            for(var i = 0; i < widget._form.questionList.length; i++){
+              List<OptionModel> optionModelList = new List<OptionModel>();
+              for(var j = 0; j < widget._form.questionList[i].optionList.length; j++){
+                OptionModel optionModel = OptionModel(optionControllerList[i + j].text, j, false);
+                optionModelList.add(optionModel);
+              }
+              QuestionModel questionModel = QuestionModel(questionControllerList[i].text, optionModelList, i);
+              questionModelList.add(questionModel);
+            }
+            FormModel form = FormModel(widget._form.title, questionModelList);
+            String json = jsonEncode(form);
+            MySharedPreferences.setData(json, '#' + form.title);
+            Navigator.pop(context);
+          }
       ),
     );
   }

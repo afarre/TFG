@@ -49,7 +49,7 @@ class _AdvertiserList extends State<AdvertiserList> with WidgetsBindingObserver{
       await Nearby().startDiscovery(name,
         _strategy,
         onEndpointFound: (endpointId, endpointName, endpointServiceId) {
-          AdvertiserData advertiserData = AdvertiserData(endpointName, endpointId, endpointServiceId);
+          AdvertiserData advertiserData = AdvertiserData(endpointName, endpointId, endpointServiceId, false);
           //WidgetsBinding.instance.addPostFrameCallback((_){
             setState(() {
               bool inList = false;
@@ -189,7 +189,6 @@ class _AdvertiserList extends State<AdvertiserList> with WidgetsBindingObserver{
   _connectToAdvertiser(AdvertiserData data) {
     Nearby().stopDiscovery();
     _teacherId = data.id;
-    print("widgets done?");
     // show sheet automatically to request connection
     showModalBottomSheet(
       context: context,
@@ -230,17 +229,21 @@ class _AdvertiserList extends State<AdvertiserList> with WidgetsBindingObserver{
                       _onConnectionInit(id, info);
                     },
                     onConnectionResult: (id, status) {
-                      //TODO: enviar UUID nomes si status es OK. revisar
-                      SettingsView.getDeviceDetails().then((value){
-                        print("sending UUID to teacher: ${value[2]}");
-                        Nearby().sendBytesPayload(id, Uint8List.fromList(("UUID" + value[2]).codeUnits));
-                      });
-                      print("status: $status");
-                      //showSnackbar("status: $status");
+                      if(status == Status.CONNECTED){
+                        SettingsView.getDeviceDetails().then((value){
+                          Nearby().sendBytesPayload(id, Uint8List.fromList(("UUID" + value[2]).codeUnits));
+                        });
+                        setState(() {
+                          widget.advertiserList[widget.advertiserList.indexOf(data)].connected = true;
+                        });
+                      }
                     },
                     onDisconnected: (id) {
                       _showSnackbar("Disconnected $id");
-                      //TODO: indicar al usuari que s'ha desconectat de forma visual
+                      print("disconnected");
+                      setState(() {
+                        widget.advertiserList[widget.advertiserList.indexOf(data)].connected = false;
+                      });
                     },
                   );
                 },
@@ -253,6 +256,12 @@ class _AdvertiserList extends State<AdvertiserList> with WidgetsBindingObserver{
   }
 
   Widget _fillSingleCellCool(AdvertiserData data) {
+    Color colors;
+    if(data.connected){
+      colors = Colors.green;
+    }else{
+      colors = Colors.black;
+    }
     return Container(
       height: 250,
       width: MediaQuery.of(context).size.width,
@@ -270,7 +279,7 @@ class _AdvertiserList extends State<AdvertiserList> with WidgetsBindingObserver{
                     radius: 1,
                     center: Alignment(1, -1),
                     colors: [
-                      Colors.black.withOpacity(0.6),
+                      colors,
                       Colors.transparent
                     ]
                 ), //linear gradient
@@ -289,7 +298,7 @@ class _AdvertiserList extends State<AdvertiserList> with WidgetsBindingObserver{
                     end: Alignment.bottomCenter,
                     colors: [
                       Colors.transparent,
-                      Colors.black
+                      colors.withOpacity(0.6)
                     ]
                   ), //linear gradient
                 ), //decoration
@@ -354,6 +363,7 @@ class _AdvertiserList extends State<AdvertiserList> with WidgetsBindingObserver{
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if(state == AppLifecycleState.detached || state == AppLifecycleState.inactive || state == AppLifecycleState.paused){
       print("stopped discovery");
+      widget.advertiserList.clear();
       Nearby().stopDiscovery();
     }else if (state == AppLifecycleState.resumed){
       print("discovering because state resumed");
